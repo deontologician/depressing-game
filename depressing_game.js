@@ -5,7 +5,7 @@ function numberWithCommas(x) {
 }
 
 function determineIfDead(age) {
-  return Math.random() <= (120 - age)
+  return Math.random() <= 1/(120 - age)
 }
 
 
@@ -14,15 +14,15 @@ class DepressingState {
   constructor() {
     this.buttonText = 'Play the game'
     this.age = 18
-    this.dollars = 10000
-    this.salary = 10000
+    this.dollars = 0
+    this.salary = 24000
     this.dead = false
   }
 
   doRound() {
     this.age += 1
     this.dollars += this.salary
-    this.salary = Math.round(this.salary * 1.10)
+    this.salary = Math.round(this.salary * 1.02)
     if (determineIfDead(this.age)) {
       this.dead = true
     }
