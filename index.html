@@ -10,7 +10,7 @@
 
         <!-- Optional theme -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
+        <script src="//cdnjs.cloudflare.com/ajax/libs/maquette/2.4.1/maquette.min.js"></script>
         <style media="screen" type="text/css">
 
         </style>
@@ -20,12 +20,21 @@
             <div class="jumbotron">
                 <h1>The Depressing Game</h1>
                 <p class="lead">You can't take it with you</p>
-                <p>
-                    <a class="btn btn-lg btn-success"
-                       href="#" role="button">Play the game</a>
-                </p>
+            </div>
+            <div class="row">
+                <div id="game"></div>
             </div>
         </div>
+        <script src="depressing_data.js"></script>
         <script src="depressing_game.js"></script>
+        <script>
+         document.addEventListener('DOMContentLoaded', () => {
+             var h = maquette.h
+             var projector = maquette.createProjector()
+             var rootElem = document.getElementById('game')
+             var depressingGame = new DepressingGame(rootElem)
+             projector.append(rootElem, () => depressingGame.render())
+         })
+        </script>
     </body>
 </html>
