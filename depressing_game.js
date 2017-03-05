@@ -4,6 +4,11 @@ function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+function determineIfDead(age) {
+  return Math.random() <= (120 - age)
+}
+
+
 class DepressingState {
 
   constructor() {
@@ -18,7 +23,7 @@ class DepressingState {
     this.age += 1
     this.dollars += this.salary
     this.salary = Math.round(this.salary * 1.10)
-    if (this.age == 70) {
+    if (determineIfDead(this.age)) {
       this.dead = true
     }
   }
@@ -54,7 +59,7 @@ class DepressingGame {
         h('div', [`Dollars: $${numberWithCommas(this.state.dollars)}`]),
         h('div', [`Salary: $${numberWithCommas(this.state.salary)}`]),
       ]),
-      (this.state.dead) ? 'You died' : this.button(),
+      (this.state.dead) ? h('b', ['You died.']) : this.button(),
     ])
   }
 }
