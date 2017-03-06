@@ -4,13 +4,23 @@ function commas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-function determineIfDead(age) {
-  return Math.random() <= 1/(120 - age)
-}
-
 
 function makeList(stuffs) {
   return h('ul', stuffs.map(stuff => h('li', [stuff])))
+}
+
+class ProposedState {
+  constructor(actualState) {
+    this.reset(actualState)
+  }
+
+  reset(actualState) {
+    this.invest = Math.min(actualState.cash, 12)
+  }
+
+  updateInvest(evt) {
+    this.invest = parseInt(evt.target.value)
+  }
 }
 
 
@@ -21,28 +31,37 @@ class DepressingState {
     this.age = 18
     this.cash = 0
     this.salary = 24000
-    this._howMuchToInvest = 0
     this.invested = 0
     this.expenses = 0
     this.dead = false
+    this.proposed = new ProposedState(this)
   }
 
-  updateInvest(evt) {
-    this._howMuchToInvest = evt.target.value
+  updateSalary() {
+    let raisePercent = 1 + Math.random() * 0.12 - 0.05
+    this.salary = Math.round(this.salary * raisePercent)
+  }
+
+  decideIfDead() {
+    if (Math.random() <= 1/(120 - this.age)) {
+      this.dead = true
+    }
+  }
+
+  doInvestment() {
+    this.invested = Math.round(this.invested * 1.05)
+    this.cash -= this.proposed.invest
+    this.invested += this.proposed.invest
   }
 
   doRound() {
     this.age += 1
-    this.investments = Math.round(this.investments *= 1.05)
-    let investAmount = Math.max(0, this._howMuchToInvest)
-    this.cash -= investAmount
-    this.invested += investAmount
+    this.doInvestment()
     this.cash += this.salary
-    this._howMuchToInvest = Math.round(this.cash / 2)
-    this.salary = Math.round(this.salary * 1.02)
-    if (determineIfDead(this.age)) {
-      this.dead = true
-    }
+    this.updateSalary()
+
+    this.proposed.reset(this)
+    this.decideIfDead()
   }
 
 }
@@ -68,33 +87,48 @@ class DepressingGame {
     if (this.state.cash > 0) {
       return h('form', [
         h('div.form-group', [
-          h('label', [`Invest $${commas(this.state._howMuchToInvest)}`]),
+          h('label', [`Invest $${commas(this.state.proposed.invest)}`]),
           h('input.slider', {
             type: 'range',
             min: 0,
             max: this.state.cash,
             step: 1,
-            value: this.state._howMuchToInvest,
-            oninput: this.state.updateInvest,
-            onchange: this.state.updateInvest,
-            bind: this.state,
+            value: this.state.proposed.invest,
+            oninput: this.state.proposed.updateInvest,
+            bind: this.state.proposed,
           }),
         ])
       ])
+    } else {
+      return ''
     }
+  }
+
+  inputForm() {
+    if (!this.state.dead) {
+      return h('p', [
+        this.investForm(),
+        this.button(),
+      ])
+    } else {
+      return h('b', ['You died.'])
+    }
+  }
+
+  outputList() {
+    return makeList([
+      h('div', [`Age: ${this.state.age}`]),
+      h('div', [`Cash: $${commas(this.state.cash)}`]),
+      h('div', [`Salary: $${commas(this.state.salary)}`]),
+      h('div', [`Investments: $${commas(this.state.invested)}`]),
+    ])
   }
 
   render() {
     return h('div', [
       h('p', [this.bigtext()]),
-      makeList([
-        h('div', [`Age: ${this.state.age}`]),
-        h('div', [`Cash: $${commas(this.state.cash)}`]),
-        h('div', [`Salary: $${commas(this.state.salary)}`]),
-        h('div', [`Investments: $${commas(this.state.invested)}`]),
-      ]),
-      this.investForm(),
-      (this.state.dead) ? h('b', ['You died.']) : this.button(),
+      this.outputList(),
+      this.inputForm(),
     ])
   }
 }
