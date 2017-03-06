@@ -59,16 +59,12 @@ class DepressingState {
     this.sex = Math.random() > 0.5 ? 'male': 'female'
     this.cash = 0
     this.salary = 28458
+    this.capital_gains = 0
     this.invested = 0
     this.debt = 0
     this.expenses = VERY_DEPRESSING_DATA.cost_of_living
     this.dead = false
     this.proposed = new ProposedState(this)
-  }
-
-  updateSalary() {
-    let raisePercent = 1 + Math.random() * 0.15 - 0.05
-    this.salary = Math.round(this.salary * raisePercent)
   }
 
   decideIfDead() {
@@ -78,8 +74,16 @@ class DepressingState {
     }
   }
 
+  updateSalary() {
+    let raisePercent = 1 + Math.random() * 0.15 - 0.05
+    this.salary = Math.round(this.salary * raisePercent)
+  }
+
+  updateCapitalGains() {
+    this.capital_gains = Math.round(this.invested * 0.05)
+  }
+
   doInvestment() {
-    this.invested = Math.round(this.invested * 1.05)
     if (this.proposed.invest > 0) {
       this.cash -= this.proposed.invest
       this.invested += this.proposed.invest
@@ -95,7 +99,7 @@ class DepressingState {
   }
 
   updateCash() {
-    this.cash += this.salary
+    this.cash += this.salary + this.capital_gains
     if (this.expenses > this.cash) {
       let shortfall = this.expenses - this.cash
       console.log(`There was a shortfall of $${commas(shortfall)}`)
@@ -123,6 +127,7 @@ class DepressingState {
     this.doDebt()
     this.updateCash()
     this.updateSalary()
+    this.updateCapitalGains()
     this.updateExpenses()
 
     this.proposed.reset(this)
@@ -200,9 +205,12 @@ class DepressingGame {
       makeli('Sex', this.state.sex),
       makeli('Age', this.state.age),
       makeli$('Cash', this.state.cash),
-      makeli$('Salary', this.state.salary),
       makeli$('Expenses', this.state.expenses),
+      makeli$('Salary', this.state.salary),
     ]
+    if (this.state.capital_gains > 0) {
+      displays.push(makeli$('Capital gains', this.state.capital_gains))
+    }
     if (this.state.invested > 0) {
       displays.push(makeli$('Investments', this.state.invested))
     }
