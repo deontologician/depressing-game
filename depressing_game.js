@@ -129,7 +129,6 @@ class DepressingState {
     this.cash += this.salary + this.capital_gains
     if (this.expenses > this.cash) {
       let shortfall = this.expenses - this.cash
-      this.log(`Not enough cash for expenses, shortfall of $${commas(shortfall)}.`)
       this.cash = 0
       if (shortfall > this.invested) {
         let debt = shortfall - this.invested
@@ -137,10 +136,11 @@ class DepressingState {
           this.log(`Had to go into debt -$${commas(debt)}. Savings wiped out.`)
           this.invested = 0
         } else {
-          this.log(`Had to go into debt $${commas(debt)}.`)
+          this.log(`Had to go into debt -$${commas(debt)}.`)
         }
         this.debt -= debt
       } else {
+        this.log(`Not enough cash for expenses. Eating into investment principle $${commas(shortfall)}.`)
         this.invested -= shortfall
       }
     } else {
