@@ -169,13 +169,15 @@ class DepressingGame {
   investForm() {
     if (this.state.cash > 0) {
       let sliders = [
-        h('label', [`Invest $${commas(this.state.proposed.invest)}`]),
+        h('label', {key: 'label-invest'},
+          [`Invest $${commas(this.state.proposed.invest)}`]),
         this.slider('invest', 'updateInvest', this.state.cash),
       ]
 
       if (this.state.debt < 0) {
         sliders.push(
-          h('label', [`Pay debt $${commas(this.state.proposed.pay_debt)}`]))
+          h('label', {key: 'label-pay-debt'},
+            [`Pay debt $${commas(this.state.proposed.pay_debt)}`]))
         sliders.push(
           this.slider('pay_debt', 'updatePayDebt',
                       Math.min(-this.state.debt, this.state.cash)))
