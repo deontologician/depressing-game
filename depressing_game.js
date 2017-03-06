@@ -6,6 +6,10 @@ function commas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+function satsub(a, b) {
+  return Math.max(a-b, 0)
+}
+
 
 function makeli$(title, value) {
   return h('li', {key: title}, [`${title}: $${commas(value)}`])
@@ -21,11 +25,28 @@ class ProposedState {
   }
 
   reset(actualState) {
-    this.invest = Math.min(actualState.cash, 12)
+    this.cash = actualState.cash
+    this.debt = actualState.debt
+    this.pay_debt = Math.min(this.cash, 12)
+    this.invest = Math.min(12, satsub(this.cash, this.pay_debt))
   }
 
   updateInvest(evt) {
-    this.invest = parseInt(evt.target.value)
+    let amount = parseInt(evt.target.value)
+    this.invest = amount
+    let ready_cash = this.cash - this.pay_debt
+    if (amount > ready_cash) {
+      this.pay_debt += ready_cash - amount
+    }
+  }
+
+  updatePayDebt(evt) {
+    let amount = parseInt(evt.target.value)
+    this.pay_debt = amount
+    let ready_cash = this.cash - this.invest
+    if (amount > ready_cash) {
+      this.invest += ready_cash - amount
+    }
   }
 }
 
@@ -65,6 +86,14 @@ class DepressingState {
     }
   }
 
+  doDebt() {
+    if (this.proposed.pay_debt > 0) {
+      this.cash -= this.proposed.pay_debt
+      this.debt += this.proposed.pay_debt
+    }
+    this.debt = Math.round(this.debt * 1.04)
+  }
+
   updateCash() {
     this.cash += this.salary
     if (this.expenses > this.cash) {
@@ -74,10 +103,10 @@ class DepressingState {
       if (shortfall > this.invested) {
         let debt = shortfall - this.invested
         console.log(`Had to go into debt -$${debt}`)
-        this.investments = 0
+        this.invested = 0
         this.debt -= debt
       } else {
-        this.investments -= shortfall
+        this.invested -= shortfall
       }
     } else {
       this.cash -= this.expenses
@@ -91,6 +120,7 @@ class DepressingState {
   doRound() {
     this.age += 1
     this.doInvestment()
+    this.doDebt()
     this.updateCash()
     this.updateSalary()
     this.updateExpenses()
@@ -118,22 +148,35 @@ class DepressingGame {
     }, [this.state.buttonText])
   }
 
+  slider(prop, updateFunc, max) {
+    return h('input.slider', {
+      type: 'range',
+      min: 0,
+      max: max,
+      step: 1,
+      key: prop,
+      value: this.state.proposed[prop],
+      oninput: this.state.proposed[updateFunc],
+      bind: this.state.proposed,
+    })
+  }
+
   investForm() {
     if (this.state.cash > 0) {
-      return h('form', [
-        h('div.form-group', [
-          h('label', [`Invest $${commas(this.state.proposed.invest)}`]),
-          h('input.slider', {
-            type: 'range',
-            min: 0,
-            max: this.state.cash,
-            step: 1,
-            value: this.state.proposed.invest,
-            oninput: this.state.proposed.updateInvest,
-            bind: this.state.proposed,
-          }),
-        ])
-      ])
+      let sliders = [
+        h('label', [`Invest $${commas(this.state.proposed.invest)}`]),
+        this.slider('invest', 'updateInvest', this.state.cash),
+      ]
+
+      if (this.state.debt < 0) {
+        sliders.push(
+          h('label', [`Pay debt $${commas(this.state.proposed.pay_debt)}`]))
+        sliders.push(
+          this.slider('pay_debt', 'updatePayDebt',
+                      Math.min(-this.state.debt, this.state.cash)))
+      }
+
+      return h('form', [h('div.form-group', sliders)])
     } else {
       return ''
     }
