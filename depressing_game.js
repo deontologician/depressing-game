@@ -5,8 +5,12 @@ function commas(x) {
 }
 
 
-function makeList(stuffs) {
-  return h('ul', stuffs.map(stuff => h('li', [stuff])))
+function makeli$(title, value) {
+  return h('li', {key: title}, [`${title}: $${commas(value)}`])
+}
+
+function makeli(title, value) {
+  return h('li', {key: title}, [`${title}: ${commas(value)}`])
 }
 
 class ProposedState {
@@ -29,39 +33,61 @@ class DepressingState {
   constructor() {
     this.buttonText = 'Play the game'
     this.age = 18
+    this.sex = Math.random() > 0.5 ? 'male': 'female'
     this.cash = 0
-    this.salary = 24000
+    this.salary = 28458
     this.invested = 0
-    this.expenses = 0
+    this.debt = 0
+    this.expenses = VERY_DEPRESSING_DATA.cost_of_living
     this.dead = false
     this.proposed = new ProposedState(this)
   }
 
   updateSalary() {
-    let raisePercent = 1 + Math.random() * 0.12 - 0.05
+    let raisePercent = 1 + Math.random() * 0.15 - 0.05
     this.salary = Math.round(this.salary * raisePercent)
   }
 
   decideIfDead() {
-    if (Math.random() <= 1/(120 - this.age)) {
+    if (Math.random() <=
+        VERY_DEPRESSING_DATA.death_rates[this.age][this.sex]) {
       this.dead = true
     }
   }
 
   doInvestment() {
     this.invested = Math.round(this.invested * 1.05)
-    this.cash -= this.proposed.invest
-    this.invested += this.proposed.invest
+    if (this.proposed.invest > 0) {
+      this.cash -= this.proposed.invest
+      this.invested += this.proposed.invest
+    }
   }
 
   updateCash() {
-    this.cash = Math.round(this.cash * (1 - VERY_DEPRESSING_DATA.inflation))
     this.cash += this.salary
+    if (this.expenses > this.cash) {
+      let shortfall = this.expenses - this.cash
+      this.cash = 0
+      if (shortfall > this.investments) {
+        let debt = shortfall - this.investments
+        this.investments = 0
+        this.debt -= debt
+      } else {
+        this.investments -= shortfall
+      }
+    } else {
+      this.cash -= this.expenses
+    }
+  }
+
+  updateExpenses() {
+    this.expenses = Math.round(this.expenses * (1 + VERY_DEPRESSING_DATA.inflation))
   }
 
   doRound() {
     this.age += 1
     this.doInvestment()
+    this.updateExpenses()
     this.updateCash()
     this.updateSalary()
 
@@ -120,13 +146,24 @@ class DepressingGame {
     }
   }
 
+
+
   outputList() {
-    return makeList([
-      h('div', [`Age: ${this.state.age}`]),
-      h('div', [`Cash: $${commas(this.state.cash)}`]),
-      h('div', [`Salary: $${commas(this.state.salary)}`]),
-      h('div', [`Investments: $${commas(this.state.invested)}`]),
-    ])
+    let displays = [
+      makeli('Sex', this.state.sex),
+      makeli('Age', this.state.age),
+      makeli$('Cash', this.state.cash),
+      makeli$('Salary', this.state.salary),
+      makeli$('Expenses', this.state.expenses),
+    ]
+    if (this.state.invested > 0) {
+      displays.push(makeli$('Investments', this.state.invested))
+    }
+    if (this.state.debt < 0) {
+      displays.push(makeli$('Debt', this.state.debt))
+    }
+
+    return h('ul', displays)
   }
 
   render() {
