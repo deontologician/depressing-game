@@ -1,3 +1,5 @@
+'use strict';
+
 var h = maquette.h
 
 function commas(x) {
@@ -67,9 +69,11 @@ class DepressingState {
     this.cash += this.salary
     if (this.expenses > this.cash) {
       let shortfall = this.expenses - this.cash
+      console.log(`There was a shortfall of $${commas(shortfall)}`)
       this.cash = 0
-      if (shortfall > this.investments) {
-        let debt = shortfall - this.investments
+      if (shortfall > this.invested) {
+        let debt = shortfall - this.invested
+        console.log(`Had to go into debt -$${debt}`)
         this.investments = 0
         this.debt -= debt
       } else {
@@ -87,9 +91,9 @@ class DepressingState {
   doRound() {
     this.age += 1
     this.doInvestment()
-    this.updateExpenses()
     this.updateCash()
     this.updateSalary()
+    this.updateExpenses()
 
     this.proposed.reset(this)
     this.decideIfDead()

@@ -1,8 +1,10 @@
+'use strict';
 var VERY_DEPRESSING_DATA = {
   preamble: "You know how to play",
   inflation: 0.03,
+  // http://cost-of-living.careertrends.com/l/615/The-United-States
   cost_of_living: 28458,
-  death_rates: {
+  death_rates: { // https://www.ssa.gov/oact/STATS/table4c6.html
     18: {male: 0.000735, female: 0.0002978},
     19: {male: 0.000869, female: 0.0003340},
     20: {male: 0.001011, female: 0.0003732},
