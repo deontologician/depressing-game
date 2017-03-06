@@ -54,10 +54,15 @@ class DepressingState {
     this.invested += this.proposed.invest
   }
 
+  updateCash() {
+    this.cash = Math.round(this.cash * (1 - VERY_DEPRESSING_DATA.inflation))
+    this.cash += this.salary
+  }
+
   doRound() {
     this.age += 1
     this.doInvestment()
-    this.cash += this.salary
+    this.updateCash()
     this.updateSalary()
 
     this.proposed.reset(this)
