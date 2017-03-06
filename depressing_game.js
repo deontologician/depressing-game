@@ -3,13 +3,12 @@
 var h = maquette.h
 
 function commas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 function satsub(a, b) {
   return Math.max(a-b, 0)
 }
-
 
 function makeli$(title, value) {
   return h('li', {key: title}, [`${title}: $${commas(value)}`])
@@ -17,6 +16,20 @@ function makeli$(title, value) {
 
 function makeli(title, value) {
   return h('li', {key: title}, [`${title}: ${commas(value)}`])
+}
+
+class DepressingLog {
+  constructor() {
+    this._log = []
+  }
+
+  record(age, message) {
+    this._log.unshift({m: message, id: Math.random(), age})
+  }
+
+  allLogs() {
+    return this._log
+  }
 }
 
 class ProposedState {
@@ -64,7 +77,16 @@ class DepressingState {
     this.debt = 0
     this.expenses = VERY_DEPRESSING_DATA.cost_of_living
     this.dead = false
+    this.logger = new DepressingLog()
     this.proposed = new ProposedState(this)
+  }
+
+  log(message) {
+    this.logger.record(this.age, message)
+  }
+
+  getLogs() {
+    return this.logger.allLogs()
   }
 
   decideIfDead() {
@@ -75,7 +97,12 @@ class DepressingState {
   }
 
   updateSalary() {
-    let raisePercent = 1 + Math.random() * 0.15 - 0.05
+    let raisePercent = 1 + Math.random() * 0.20 - 0.05
+    if (raisePercent > 1.09) {
+      this.log('You received a large raise')
+    } else if (raisePercent < 1) {
+      this.log('You were fired and got a new job at a lower salary.')
+    }
     this.salary = Math.round(this.salary * raisePercent)
   }
 
@@ -102,12 +129,16 @@ class DepressingState {
     this.cash += this.salary + this.capital_gains
     if (this.expenses > this.cash) {
       let shortfall = this.expenses - this.cash
-      console.log(`There was a shortfall of $${commas(shortfall)}`)
+      this.log(`Not enough cash for expenses, shortfall of $${commas(shortfall)}.`)
       this.cash = 0
       if (shortfall > this.invested) {
         let debt = shortfall - this.invested
-        console.log(`Had to go into debt -$${debt}`)
-        this.invested = 0
+        if (this.invested > 0) {
+          this.log(`Had to go into debt -$${commas(debt)}. Savings wiped out.`)
+          this.invested = 0
+        } else {
+          this.log(`Had to go into debt $${commas(debt)}.`)
+        }
         this.debt -= debt
       } else {
         this.invested -= shortfall
@@ -200,8 +231,6 @@ class DepressingGame {
     }
   }
 
-
-
   outputList() {
     let displays = [
       makeli('Sex', this.state.sex),
@@ -223,11 +252,21 @@ class DepressingGame {
     return h('ul', displays)
   }
 
+  showLog() {
+    let logs = this.state.getLogs()
+        .map((msg) => h('p', {key: msg.id}, [
+          h('b', [`Age ${msg.age}: `]),
+          msg.m
+        ]))
+    return h('div', logs)
+  }
+
   render() {
     return h('div', [
       h('p', [this.bigtext()]),
       this.outputList(),
       this.inputForm(),
+      this.showLog(),
     ])
   }
 }
