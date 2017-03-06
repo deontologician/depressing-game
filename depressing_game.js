@@ -97,7 +97,7 @@ class DepressingState {
   }
 
   updateSalary() {
-    let raisePercent = 1 + Math.random() * 0.20 - 0.05
+    let raisePercent = 1 + Math.random() * 0.16 - 0.04
     if (raisePercent > 1.09) {
       this.log('You received a large raise')
     } else if (raisePercent < 1) {
