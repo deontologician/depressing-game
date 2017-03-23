@@ -1,0 +1,15 @@
+/* CSS RESET END */
+
+input[type=range] {
+    -webkit-appearance: none;
+    width: 80%;
+    background: transparent;
+    margin-left: 20px;
+}
+input[type=range]:focus {
+    outline: none;
+}
+
+.container {
+    display: grid;
+}
