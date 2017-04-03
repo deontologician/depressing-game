@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "moduleResolution": "Node",
+    "target": "es5",
+    "noImplicitAny": false,
+    "sourceMap": false,
+    "strictNullChecks": true,
+    "outFile": "depressing_game.js",
+    "noImplicitAny" : true
+  },
+  "files": [
+    "depressing_game.ts",
+    "third-party/maquette.ts"
+  ]
+}
