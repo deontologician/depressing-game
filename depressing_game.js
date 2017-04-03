@@ -128,7 +128,7 @@ class DepressingState {
         }
         this.debt -= debt
       } else {
-        this.log(`Not enough cash for expenses. Eating into investment principle $${Ui.commas(shortfall)}.`)
+        this.log(`Not enough cash for expenses. Eating into investment principle $${UI.commas(shortfall)}.`)
         this.invested -= shortfall
       }
     } else {
@@ -172,34 +172,28 @@ class DepressingGame {
     }, [this.state.buttonText])
   }
 
-  slider(prop, updateFunc, max) {
-    return UI.slider({
-      type: 'range',
-      min: 0,
-      max: max,
-      step: 1,
-      key: prop,
-      value: this.state.proposed[prop],
-      oninput: this.state.proposed[updateFunc],
-      bind: this.state.proposed,
-    })
-  }
-
   investForm() {
     if (this.state.cash > 0) {
       let sliders = [
-        UI.label({key: 'label-invest'},
-          [`Invest $${UI.commas(this.state.proposed.invest)}`]),
-        this.slider('invest', 'updateInvest', this.state.cash),
+        UI.slider$({
+          name: 'Invest',
+          prop: 'invest',
+          update: this.state.proposed.updateInvest,
+          bind: this.state.proposed,
+          max: this.state.cash,
+        })
       ]
 
       if (this.state.debt < 0) {
         sliders.push(
-          UI.label({key: 'label-pay-debt'},
-            [`Pay debt $${UI.commas(this.state.proposed.pay_debt)}`]))
-        sliders.push(
-          this.slider('pay_debt', 'updatePayDebt',
-                      Math.min(-this.state.debt, this.state.cash)))
+          UI.slider$({
+            name: 'Pay debt',
+            prop: 'pay_debt',
+            update: this.state.proposed.updatePayDebt,
+            bind: this.state.proposed,
+            max: Math.min(-this.state.debt, this.state.cash),
+          })
+        )
       }
 
       return UI.sliderForm(sliders)
