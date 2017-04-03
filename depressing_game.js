@@ -2,20 +2,8 @@
 
 var h = maquette.h
 
-function commas(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
 function satsub(a, b) {
   return Math.max(a-b, 0)
-}
-
-function makeli$(title, value) {
-  return h('li', {key: title}, [`${title}: $${commas(value)}`])
-}
-
-function makeli(title, value) {
-  return h('li', {key: title}, [`${title}: ${commas(value)}`])
 }
 
 class DepressingLog {
@@ -133,14 +121,14 @@ class DepressingState {
       if (shortfall > this.invested) {
         let debt = shortfall - this.invested
         if (this.invested > 0) {
-          this.log(`Had to go into debt -$${commas(debt)}. Savings wiped out.`)
+          this.log(`Had to go into debt -$${UI.commas(debt)}. Savings wiped out.`)
           this.invested = 0
         } else {
-          this.log(`Had to go into debt -$${commas(debt)}.`)
+          this.log(`Had to go into debt -$${UI.commas(debt)}.`)
         }
         this.debt -= debt
       } else {
-        this.log(`Not enough cash for expenses. Eating into investment principle $${commas(shortfall)}.`)
+        this.log(`Not enough cash for expenses. Eating into investment principle $${Ui.commas(shortfall)}.`)
         this.invested -= shortfall
       }
     } else {
@@ -178,14 +166,14 @@ class DepressingGame {
   }
 
   button() {
-    return h('a.btn.btn-large.btn-success', {
+    return UI.successButton({
       onclick: this.state.doRound,
       bind: this.state,
     }, [this.state.buttonText])
   }
 
   slider(prop, updateFunc, max) {
-    return h('input.slider', {
+    return UI.slider({
       type: 'range',
       min: 0,
       max: max,
@@ -200,21 +188,21 @@ class DepressingGame {
   investForm() {
     if (this.state.cash > 0) {
       let sliders = [
-        h('label', {key: 'label-invest'},
-          [`Invest $${commas(this.state.proposed.invest)}`]),
+        UI.label({key: 'label-invest'},
+          [`Invest $${UI.commas(this.state.proposed.invest)}`]),
         this.slider('invest', 'updateInvest', this.state.cash),
       ]
 
       if (this.state.debt < 0) {
         sliders.push(
-          h('label', {key: 'label-pay-debt'},
-            [`Pay debt $${commas(this.state.proposed.pay_debt)}`]))
+          UI.label({key: 'label-pay-debt'},
+            [`Pay debt $${UI.commas(this.state.proposed.pay_debt)}`]))
         sliders.push(
           this.slider('pay_debt', 'updatePayDebt',
                       Math.min(-this.state.debt, this.state.cash)))
       }
 
-      return h('form', [h('div.form-group', sliders)])
+      return UI.sliderForm(sliders)
     } else {
       return ''
     }
@@ -222,48 +210,48 @@ class DepressingGame {
 
   inputForm() {
     if (!this.state.dead) {
-      return h('p', [
+      return UI.p([
         this.investForm(),
         this.button(),
       ])
     } else {
-      return h('b', ['You died.'])
+      return UI.b('You died.')
     }
   }
 
   outputList() {
     let displays = [
-      makeli('Sex', this.state.sex),
-      makeli('Age', this.state.age),
-      makeli$('Cash', this.state.cash),
-      makeli$('Expenses', this.state.expenses),
-      makeli$('Salary', this.state.salary),
+      UI.keyvalLi('Sex', this.state.sex),
+      UI.keyvalLi('Age', this.state.age),
+      UI.keyvalLi$('Cash', this.state.cash),
+      UI.keyvalLi$('Expenses', this.state.expenses),
+      UI.keyvalLi$('Salary', this.state.salary),
     ]
     if (this.state.capital_gains > 0) {
-      displays.push(makeli$('Capital gains', this.state.capital_gains))
+      displays.push(UI.keyvalLi$('Capital gains', this.state.capital_gains))
     }
     if (this.state.invested > 0) {
-      displays.push(makeli$('Investments', this.state.invested))
+      displays.push(UI.keyvalLi$('Investments', this.state.invested))
     }
     if (this.state.debt < 0) {
-      displays.push(makeli$('Debt', this.state.debt))
+      displays.push(UI.keyvalLi$('Debt', this.state.debt))
     }
 
-    return h('ul', displays)
+    return UI.ul(displays)
   }
 
   showLog() {
     let logs = this.state.getLogs()
-        .map((msg) => h('p', {key: msg.id}, [
-          h('b', [`Age ${msg.age}: `]),
+        .map((msg) => UI.p({key: msg.id}, [
+          UI.b(`Age ${msg.age}: `),
           msg.m
         ]))
-    return h('div', logs)
+    return UI.div(logs)
   }
 
   render() {
-    return h('div', [
-      h('p', [this.bigtext()]),
+    return UI.div([
+      UI.p([this.bigtext()]),
       this.outputList(),
       this.inputForm(),
       this.showLog(),
