@@ -1126,7 +1126,7 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
             }, [this.state.buttonText]);
         };
         DepressingGame.prototype.slider = function (prop, updateFunc, max) {
-            return maquette_1.h('input.slider', {
+            return maquette_1.h('progress.progress', {
                 type: 'range',
                 min: 0,
                 max: max,

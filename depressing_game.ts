@@ -231,7 +231,7 @@ class DepressingGame {
   slider(prop: keyof ProposedStateFields,
          updateFunc: keyof ProposedStateUpdates,
          max:number) {
-    return h('input.slider', {
+    return h('progress.progress', {
       type: 'range',
       min: 0,
       max: max,
