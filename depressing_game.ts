@@ -317,12 +317,11 @@ class DepressingGame {
 }
 
 // Initialize
-
-document.addEventListener('DOMContentLoaded', () => {
+export function initialize() {
   let projector = createProjector()
   let rootElem = document.getElementById('game')
   let depressingGame = new DepressingGame()
   if (rootElem !== null) {
     projector.append(rootElem, () => depressingGame.render())
   }
-})
+}

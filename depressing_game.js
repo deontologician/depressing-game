@@ -972,7 +972,7 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
     function makeli(title, value) {
         return maquette_1.h('li', { key: title }, [title + ": " + commas(value)]);
     }
-    var DepressingLog = (function () {
+    var DepressingLog = /** @class */ (function () {
         function DepressingLog() {
             this._log = [];
         }
@@ -984,7 +984,7 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
         };
         return DepressingLog;
     }());
-    var ProposedState = (function () {
+    var ProposedState = /** @class */ (function () {
         function ProposedState(actualState) {
             this.reset(actualState);
         }
@@ -1020,7 +1020,7 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
         };
         return ProposedState;
     }());
-    var DepressingState = (function () {
+    var DepressingState = /** @class */ (function () {
         function DepressingState() {
             this.buttonText = 'Play the game';
             this.age = 18;
@@ -1114,7 +1114,7 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
         };
         return DepressingState;
     }());
-    var DepressingGame = (function () {
+    var DepressingGame = /** @class */ (function () {
         function DepressingGame() {
             this.data = depressing_data_1.VERY_DEPRESSING_DATA;
             this.state = new DepressingState();
@@ -1201,12 +1201,13 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
         return DepressingGame;
     }());
     // Initialize
-    document.addEventListener('DOMContentLoaded', function () {
+    function initialize() {
         var projector = maquette_1.createProjector();
         var rootElem = document.getElementById('game');
         var depressingGame = new DepressingGame();
         if (rootElem !== null) {
             projector.append(rootElem, function () { return depressingGame.render(); });
         }
-    });
+    }
+    exports.initialize = initialize;
 });

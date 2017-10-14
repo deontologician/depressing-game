@@ -3,11 +3,10 @@
     "module": "amd",
     "moduleResolution": "Node",
     "target": "es5",
-    "noImplicitAny": false,
     "sourceMap": false,
     "strictNullChecks": true,
-    "outFile": "depressing_game.js",
-    "noImplicitAny" : true
+    "noImplicitAny" : true,
+    "outFile": "depressing_game.js"
   },
   "files": [
     "depressing_game.ts",

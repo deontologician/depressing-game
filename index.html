@@ -1,22 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Depressing Game</title>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="third-party/bulma.css">
-        <link rel="stylesheet" href="third-party/font-awesome.css">
-        <link rel="stylesheet" href="depressing.css">
-    </head>
-    <body>
-        <div class="content">
-            <h2 class="title">You can't take it with you</h2>
-        </div>
-        <div class="tile is-ancestor">
-            <div class="box tile is-parent" id="game"></div>
-        </div>
+<head>
+  <title>Depressing Game</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="third-party/bulma.css">
+  <link rel="stylesheet" href="third-party/font-awesome.css">
+  <script src="third-party/require.js"></script>
 
-        <script src="depressing_game.js"></script>
-    </body>
+  <link rel="stylesheet" href="depressing.css">
+</head>
+<body>
+  <div class="content">
+    <h2 class="title">You can't take it with you</h2>
+  </div>
+  <div class="tile is-ancestor">
+    <div class="box tile is-parent" id="game"></div>
+  </div>
+
+  <script src="depressing_game.js"></script>
+  <script>
+    requirejs.config({
+      paths: {
+        'depressing_game':'./depressing_game'
+      }
+    });
+
+    requirejs(['depressing_game'], function(depressing_game) {
+      console.log('starting application...')
+      depressing_game.initialize()
+    });
+
+  </script>
+</body>
 </html>
