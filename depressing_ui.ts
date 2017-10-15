@@ -10,19 +10,30 @@ export function commas(x:number|string):string {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+export abstract class Component {
+  abstract render(): VNodeChild
+}
+
+export class MainButtonComponent extends Component {
+  // Represents the main game button.
+  handler: (ev: MouseEvent) => void
+
+  constructor(onClick: (ev: MouseEvent) => void) {
+    super()
+    this.handler = onClick
+  }
+
+  render(): VNode {
+    return h('a.button.is-danger', {onclick: this.handler}, 'Play the game')
+  }
+}
+
 export function makeli$(title:string, value:number|string): VNode {
   return h('li', {key: title}, [`${title}: $${commas(value)}`])
 }
 
 export function makeli(title:string, value:number|string): VNode {
   return h('li', {key: title}, [`${title}: ${commas(value)}`])
-}
-
-export function dangerButton(
-    onclick: (ev: MouseEvent) => boolean | void,
-    buttonText: string,
-  bind?: Object): VNode {
-  return h('a.button.is-danger', { onclick, bind }, [buttonText])
 }
 
 export function rangeSlider<T>(

@@ -1,3 +1,13 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("depressing_data", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -967,6 +977,25 @@ define("depressing_ui", ["require", "exports", "third-party/maquette"], function
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
     exports.commas = commas;
+    var Component = /** @class */ (function () {
+        function Component() {
+        }
+        return Component;
+    }());
+    exports.Component = Component;
+    var MainButtonComponent = /** @class */ (function (_super) {
+        __extends(MainButtonComponent, _super);
+        function MainButtonComponent(onClick) {
+            var _this = _super.call(this) || this;
+            _this.handler = onClick;
+            return _this;
+        }
+        MainButtonComponent.prototype.render = function () {
+            return maquette_1.h('a.button.is-danger', { onclick: this.handler }, 'Play the game');
+        };
+        return MainButtonComponent;
+    }(Component));
+    exports.MainButtonComponent = MainButtonComponent;
     function makeli$(title, value) {
         return maquette_1.h('li', { key: title }, [title + ": $" + commas(value)]);
     }
@@ -975,10 +1004,6 @@ define("depressing_ui", ["require", "exports", "third-party/maquette"], function
         return maquette_1.h('li', { key: title }, [title + ": " + commas(value)]);
     }
     exports.makeli = makeli;
-    function dangerButton(onclick, buttonText, bind) {
-        return maquette_1.h('a.button.is-danger', { onclick: onclick, bind: bind }, [buttonText]);
-    }
-    exports.dangerButton = dangerButton;
     function rangeSlider(state, prop, updateFunc, max) {
         return maquette_1.h('input.slider', {
             type: 'range',
@@ -1069,7 +1094,6 @@ define("depressing_game", ["require", "exports", "depressing_data", "depressing_
     }());
     var DepressingState = /** @class */ (function () {
         function DepressingState() {
-            this.buttonText = 'Play the game';
             this.age = 18;
             this.sex = Math.random() > 0.5 ? 'male' : 'female';
             this.cash = 0;
@@ -1163,12 +1187,11 @@ define("depressing_game", ["require", "exports", "depressing_data", "depressing_
     }());
     var DepressingGame = /** @class */ (function () {
         function DepressingGame() {
+            var _this = this;
             this.data = depressing_data_1.VERY_DEPRESSING_DATA;
             this.state = new DepressingState();
+            this.button = new depressing_ui_1.MainButtonComponent(function () { return _this.state.doRound(); });
         }
-        DepressingGame.prototype.button = function () {
-            return depressing_ui_1.dangerButton(this.state.doRound, this.state.buttonText, this.state);
-        };
         DepressingGame.prototype.investForm = function () {
             if (this.state.cash > 0) {
                 var sliders = [
@@ -1191,11 +1214,11 @@ define("depressing_game", ["require", "exports", "depressing_data", "depressing_
             if (!this.state.dead) {
                 return maquette_2.h('p', [
                     this.investForm(),
-                    this.button(),
+                    this.button.render(),
                 ]);
             }
             else {
-                return maquette_2.h('b', ['You died.']);
+                return maquette_2.h('b', 'You died.');
             }
         };
         DepressingGame.prototype.outputList = function () {

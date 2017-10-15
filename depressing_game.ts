@@ -4,7 +4,7 @@ import {
   commas,
   makeli$,
   makeli,
-  dangerButton,
+  MainButtonComponent,
   rangeSlider,
   label,
   form, formGroup
@@ -95,8 +95,6 @@ class ProposedState {
 
 
 class DepressingState {
-
-  buttonText: string
   age: number
   sex: 'male'|'female'
   cash: number
@@ -110,7 +108,6 @@ class DepressingState {
   proposed: ProposedState
 
   constructor() {
-    this.buttonText = 'Play the game'
     this.age = 18
     this.sex = Math.random() > 0.5 ? 'male': 'female'
     this.cash = 0
@@ -213,17 +210,12 @@ class DepressingState {
 class DepressingGame {
   data: VeryDepressingData
   state: DepressingState
+  button: MainButtonComponent
+
   constructor() {
     this.data = VERY_DEPRESSING_DATA
     this.state = new DepressingState()
-  }
-
-  button() {
-    return dangerButton(
-      this.state.doRound,
-      this.state.buttonText,
-      this.state
-    )
+    this.button = new MainButtonComponent(() => this.state.doRound())
   }
 
   investForm() {
@@ -260,10 +252,10 @@ class DepressingGame {
     if (!this.state.dead) {
       return h('p', [
         this.investForm(),
-        this.button(),
+        this.button.render(),
       ])
     } else {
-      return h('b', ['You died.'])
+      return h('b', 'You died.')
     }
   }
 
