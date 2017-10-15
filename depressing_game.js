@@ -989,6 +989,26 @@ define("depressing_ui", ["require", "exports", "third-party/maquette"], function
         });
     }
     exports.rangeSlider = rangeSlider;
+    function label(key, text) {
+        return maquette_1.h('label', { key: key }, [text]);
+    }
+    exports.label = label;
+    function form() {
+        var children = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            children[_i] = arguments[_i];
+        }
+        return maquette_1.h.apply(void 0, ['form'].concat(children));
+    }
+    exports.form = form;
+    function formGroup() {
+        var children = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            children[_i] = arguments[_i];
+        }
+        return maquette_1.h('div.form-group', children);
+    }
+    exports.formGroup = formGroup;
 });
 define("depressing_game", ["require", "exports", "depressing_data", "depressing_ui", "third-party/maquette"], function (require, exports, depressing_data_1, depressing_ui_1, maquette_2) {
     "use strict";
@@ -1149,14 +1169,16 @@ define("depressing_game", ["require", "exports", "depressing_data", "depressing_
         DepressingGame.prototype.investForm = function () {
             if (this.state.cash > 0) {
                 var sliders = [
-                    maquette_2.h('label', { key: 'label-invest' }, ["Invest $" + depressing_ui_1.commas(this.state.proposed.invest)]),
+                    depressing_ui_1.label('label-invest', "Invest $" + depressing_ui_1.commas(this.state.proposed.invest)),
                     depressing_ui_1.rangeSlider(this.state.proposed, 'invest', this.state.proposed.updateInvest, this.state.cash)
                 ];
                 if (this.state.debt < 0) {
-                    sliders.push(maquette_2.h('label', { key: 'label-pay-debt' }, ["Pay debt $" + depressing_ui_1.commas(this.state.proposed.pay_debt)]));
-                    sliders.push(depressing_ui_1.rangeSlider(this.state.proposed, 'pay_debt', this.state.proposed.updatePayDebt, Math.min(-this.state.debt, this.state.cash)));
+                    sliders.push.apply(sliders, [
+                        depressing_ui_1.label('label-pay-debt', "Pay debt $" + depressing_ui_1.commas(this.state.proposed.pay_debt)),
+                        depressing_ui_1.rangeSlider(this.state.proposed, 'pay_debt', this.state.proposed.updatePayDebt, Math.min(-this.state.debt, this.state.cash))
+                    ]);
                 }
-                return maquette_2.h('form', [maquette_2.h('div.form-group', sliders)]);
+                return depressing_ui_1.form(depressing_ui_1.formGroup(sliders));
             }
             else {
                 return '';
@@ -1217,6 +1239,7 @@ define("depressing_game", ["require", "exports", "depressing_data", "depressing_
         if (rootElem !== null) {
             projector.append(rootElem, function () { return depressingGame.render(); });
         }
+        window.game = depressingGame;
     }
     exports.initialize = initialize;
 });

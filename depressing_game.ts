@@ -6,12 +6,18 @@ import {
   makeli,
   dangerButton,
   rangeSlider,
+  label,
+  form, formGroup
 } from './depressing_ui'
 
 import { h, createProjector } from './third-party/maquette'
 
 function satsub(a:number, b:number):number {
   return Math.max(a-b, 0)
+}
+
+declare global {
+  interface Window { game: DepressingGame; }
 }
 
 class DepressingLog {
@@ -60,7 +66,7 @@ class ProposedState {
     this.invest = Math.min(12, satsub(this.cash, this.pay_debt))
   }
 
-  updateInvest(evt:Event) {
+  updateInvest(evt: Event) {
     let target = evt.target
     if (!(target instanceof HTMLInputElement)) {
       return
@@ -223,8 +229,7 @@ class DepressingGame {
   investForm() {
     if (this.state.cash > 0) {
       let sliders = [
-        h('label', {key: 'label-invest'},
-          [`Invest $${commas(this.state.proposed.invest)}`]),
+        label('label-invest', `Invest $${commas(this.state.proposed.invest)}`),
         rangeSlider(
           this.state.proposed,
           'invest',
@@ -234,19 +239,18 @@ class DepressingGame {
       ]
 
       if (this.state.debt < 0) {
-        sliders.push(
-          h('label', {key: 'label-pay-debt'},
-            [`Pay debt $${commas(this.state.proposed.pay_debt)}`]))
-        sliders.push(
+        sliders.push.apply(sliders, [
+          label('label-pay-debt',
+                `Pay debt $${commas(this.state.proposed.pay_debt)}`),
           rangeSlider(
             this.state.proposed,
             'pay_debt',
             this.state.proposed.updatePayDebt,
-            Math.min(-this.state.debt, this.state.cash)
-          )
+            Math.min(-this.state.debt, this.state.cash),
+          )]
         )
       }
-      return h('form', [h('div.form-group', sliders)])
+      return form(formGroup(sliders))
     } else {
       return ''
     }
@@ -310,4 +314,5 @@ export function initialize() {
   if (rootElem !== null) {
     projector.append(rootElem, () => depressingGame.render())
   }
+  window.game = depressingGame
 }
