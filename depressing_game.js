@@ -954,7 +954,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         return projector;
     };
 });
-define("depressing_game", ["require", "exports", "depressing_data", "third-party/maquette"], function (require, exports, depressing_data_1, maquette_1) {
+define("depressing_ui", ["require", "exports", "third-party/maquette"], function (require, exports, maquette_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function commas(x) {
@@ -963,14 +963,38 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
         }
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
-    function satsub(a, b) {
-        return Math.max(a - b, 0);
-    }
+    exports.commas = commas;
     function makeli$(title, value) {
         return maquette_1.h('li', { key: title }, [title + ": $" + commas(value)]);
     }
+    exports.makeli$ = makeli$;
     function makeli(title, value) {
         return maquette_1.h('li', { key: title }, [title + ": " + commas(value)]);
+    }
+    exports.makeli = makeli;
+    function dangerButton(onclick, buttonText, bind) {
+        return maquette_1.h('a.button.is-danger', { onclick: onclick, bind: bind }, [buttonText]);
+    }
+    exports.dangerButton = dangerButton;
+    function rangeSlider(state, prop, updateFunc, max) {
+        return maquette_1.h('input.slider', {
+            type: 'range',
+            min: 0,
+            max: max,
+            step: 1,
+            key: prop,
+            value: state[prop].toString(),
+            oninput: updateFunc,
+            bind: state,
+        });
+    }
+    exports.rangeSlider = rangeSlider;
+});
+define("depressing_game", ["require", "exports", "depressing_data", "depressing_ui", "third-party/maquette"], function (require, exports, depressing_data_1, depressing_ui_1, maquette_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function satsub(a, b) {
+        return Math.max(a - b, 0);
     }
     var DepressingLog = /** @class */ (function () {
         function DepressingLog() {
@@ -1081,16 +1105,16 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
                 if (shortfall > this.invested) {
                     var debt = shortfall - this.invested;
                     if (this.invested > 0) {
-                        this.log("Had to go into debt -$" + commas(debt) + ". Savings wiped out.");
+                        this.log("Had to go into debt -$" + depressing_ui_1.commas(debt) + ". Savings wiped out.");
                         this.invested = 0;
                     }
                     else {
-                        this.log("Had to go into debt -$" + commas(debt) + ".");
+                        this.log("Had to go into debt -$" + depressing_ui_1.commas(debt) + ".");
                     }
                     this.debt -= debt;
                 }
                 else {
-                    this.log("Not enough cash for expenses. Eating into investment principle $" + commas(shortfall) + ".");
+                    this.log("Not enough cash for expenses. Eating into investment principle $" + depressing_ui_1.commas(shortfall) + ".");
                     this.invested -= shortfall;
                 }
             }
@@ -1120,34 +1144,19 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
             this.state = new DepressingState();
         }
         DepressingGame.prototype.button = function () {
-            return maquette_1.h('a.button.is-danger', {
-                onclick: this.state.doRound,
-                bind: this.state,
-            }, [this.state.buttonText]);
-        };
-        DepressingGame.prototype.slider = function (prop, updateFunc, max) {
-            return maquette_1.h('progress.progress', {
-                type: 'range',
-                min: 0,
-                max: max,
-                step: 1,
-                key: prop,
-                value: this.state.proposed[prop].toString(),
-                oninput: this.state.proposed[updateFunc],
-                bind: this.state.proposed,
-            });
+            return depressing_ui_1.dangerButton(this.state.doRound, this.state.buttonText, this.state);
         };
         DepressingGame.prototype.investForm = function () {
             if (this.state.cash > 0) {
                 var sliders = [
-                    maquette_1.h('label', { key: 'label-invest' }, ["Invest $" + commas(this.state.proposed.invest)]),
-                    this.slider('invest', 'updateInvest', this.state.cash),
+                    maquette_2.h('label', { key: 'label-invest' }, ["Invest $" + depressing_ui_1.commas(this.state.proposed.invest)]),
+                    depressing_ui_1.rangeSlider(this.state.proposed, 'invest', this.state.proposed.updateInvest, this.state.cash)
                 ];
                 if (this.state.debt < 0) {
-                    sliders.push(maquette_1.h('label', { key: 'label-pay-debt' }, ["Pay debt $" + commas(this.state.proposed.pay_debt)]));
-                    sliders.push(this.slider('pay_debt', 'updatePayDebt', Math.min(-this.state.debt, this.state.cash)));
+                    sliders.push(maquette_2.h('label', { key: 'label-pay-debt' }, ["Pay debt $" + depressing_ui_1.commas(this.state.proposed.pay_debt)]));
+                    sliders.push(depressing_ui_1.rangeSlider(this.state.proposed, 'pay_debt', this.state.proposed.updatePayDebt, Math.min(-this.state.debt, this.state.cash)));
                 }
-                return maquette_1.h('form', [maquette_1.h('div.form-group', sliders)]);
+                return maquette_2.h('form', [maquette_2.h('div.form-group', sliders)]);
             }
             else {
                 return '';
@@ -1155,44 +1164,44 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
         };
         DepressingGame.prototype.inputForm = function () {
             if (!this.state.dead) {
-                return maquette_1.h('p', [
+                return maquette_2.h('p', [
                     this.investForm(),
                     this.button(),
                 ]);
             }
             else {
-                return maquette_1.h('b', ['You died.']);
+                return maquette_2.h('b', ['You died.']);
             }
         };
         DepressingGame.prototype.outputList = function () {
             var displays = [
-                makeli('Sex', this.state.sex),
-                makeli('Age', this.state.age),
-                makeli$('Cash', this.state.cash),
-                makeli$('Expenses', this.state.expenses),
-                makeli$('Salary', this.state.salary),
+                depressing_ui_1.makeli('Sex', this.state.sex),
+                depressing_ui_1.makeli('Age', this.state.age),
+                depressing_ui_1.makeli$('Cash', this.state.cash),
+                depressing_ui_1.makeli$('Expenses', this.state.expenses),
+                depressing_ui_1.makeli$('Salary', this.state.salary),
             ];
             if (this.state.capital_gains > 0) {
-                displays.push(makeli$('Capital gains', this.state.capital_gains));
+                displays.push(depressing_ui_1.makeli$('Capital gains', this.state.capital_gains));
             }
             if (this.state.invested > 0) {
-                displays.push(makeli$('Investments', this.state.invested));
+                displays.push(depressing_ui_1.makeli$('Investments', this.state.invested));
             }
             if (this.state.debt < 0) {
-                displays.push(makeli$('Debt', this.state.debt));
+                displays.push(depressing_ui_1.makeli$('Debt', this.state.debt));
             }
-            return maquette_1.h('ul', displays);
+            return maquette_2.h('ul', displays);
         };
         DepressingGame.prototype.showLog = function () {
             var logs = this.state.getLogs()
-                .map(function (msg) { return maquette_1.h('p', { key: msg.id }, [
-                maquette_1.h('b', ["Age " + msg.age + ": "]),
+                .map(function (msg) { return maquette_2.h('p', { key: msg.id }, [
+                maquette_2.h('b', ["Age " + msg.age + ": "]),
                 msg.m
             ]); });
-            return maquette_1.h('div', logs);
+            return maquette_2.h('div', logs);
         };
         DepressingGame.prototype.render = function () {
-            return maquette_1.h('div.tile.is-parent', [
+            return maquette_2.h('div.tile.is-parent', [
                 this.outputList(),
                 this.inputForm(),
                 this.showLog(),
@@ -1202,7 +1211,7 @@ define("depressing_game", ["require", "exports", "depressing_data", "third-party
     }());
     // Initialize
     function initialize() {
-        var projector = maquette_1.createProjector();
+        var projector = maquette_2.createProjector();
         var rootElem = document.getElementById('game');
         var depressingGame = new DepressingGame();
         if (rootElem !== null) {

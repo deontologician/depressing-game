@@ -1,26 +1,17 @@
 import { VeryDepressingData, VERY_DEPRESSING_DATA } from './depressing_data'
-import { h,
-         VNode,
-         VNodeProperties,
-         createProjector } from './third-party/maquette'
 
-function commas(x:number|string):string {
-  if (typeof x === 'string') {
-    return x
-  }
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+import {
+  commas,
+  makeli$,
+  makeli,
+  dangerButton,
+  rangeSlider,
+} from './depressing_ui'
+
+import { h, createProjector } from './third-party/maquette'
 
 function satsub(a:number, b:number):number {
   return Math.max(a-b, 0)
-}
-
-function makeli$(title:string, value:number|string) {
-  return h('li', {key: title}, [`${title}: $${commas(value)}`])
-}
-
-function makeli(title:string, value:number|string) {
-  return h('li', {key: title}, [`${title}: ${commas(value)}`])
 }
 
 class DepressingLog {
@@ -222,25 +213,11 @@ class DepressingGame {
   }
 
   button() {
-    return h('a.button.is-danger', {
-      onclick: this.state.doRound,
-      bind: this.state,
-    }, [this.state.buttonText])
-  }
-
-  slider(prop: keyof ProposedStateFields,
-         updateFunc: keyof ProposedStateUpdates,
-         max:number) {
-    return h('progress.progress', {
-      type: 'range',
-      min: 0,
-      max: max,
-      step: 1,
-      key: prop,
-      value: this.state.proposed[prop].toString(),
-      oninput: this.state.proposed[updateFunc],
-      bind: this.state.proposed,
-    } as VNodeProperties)
+    return dangerButton(
+      this.state.doRound,
+      this.state.buttonText,
+      this.state
+    )
   }
 
   investForm() {
@@ -248,7 +225,12 @@ class DepressingGame {
       let sliders = [
         h('label', {key: 'label-invest'},
           [`Invest $${commas(this.state.proposed.invest)}`]),
-        this.slider('invest', 'updateInvest', this.state.cash),
+        rangeSlider(
+          this.state.proposed,
+          'invest',
+          this.state.proposed.updateInvest,
+          this.state.cash,
+        )
       ]
 
       if (this.state.debt < 0) {
@@ -256,10 +238,14 @@ class DepressingGame {
           h('label', {key: 'label-pay-debt'},
             [`Pay debt $${commas(this.state.proposed.pay_debt)}`]))
         sliders.push(
-          this.slider('pay_debt', 'updatePayDebt',
-                      Math.min(-this.state.debt, this.state.cash)))
+          rangeSlider(
+            this.state.proposed,
+            'pay_debt',
+            this.state.proposed.updatePayDebt,
+            Math.min(-this.state.debt, this.state.cash)
+          )
+        )
       }
-
       return h('form', [h('div.form-group', sliders)])
     } else {
       return ''
