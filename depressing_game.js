@@ -1168,9 +1168,10 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
         }
         FullGameComponent.prototype.render = function () {
             return maquette_1.h('div.tile.is-ancestor', { key: this }, [
-                maquette_1.h('div.tile.is-parent', maquette_1.h('div.tile.is-child', this.outputList.render())),
-                maquette_1.h('div.tile.is-parent', maquette_1.h('div.tile.is-child', this.inputForm.render())),
-                maquette_1.h('div.tile.is-parent', maquette_1.h('div.tile.is-child', this.log.render())),
+                // The "is-X" classes have to sum to 12
+                maquette_1.h('div.tile.is-parent.is-2', maquette_1.h('div.tile.is-child', this.outputList.render())),
+                maquette_1.h('div.tile.is-parent.is-3', maquette_1.h('div.tile.is-child', this.inputForm.render())),
+                maquette_1.h('div.tile.is-parent.is-7', maquette_1.h('div.tile.is-child', this.log.render())),
             ]);
         };
         return FullGameComponent;
@@ -1281,7 +1282,7 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
         }
         LogComponent.prototype.render = function () {
             return maquette_1.h('div.eventlog', this.state.getLogs()
-                .map(function (msg) { return maquette_1.h('p', { key: msg.id }, maquette_1.h('b', "Age " + msg.age), msg.m); }));
+                .map(function (msg) { return maquette_1.h('p', { key: msg.id }, maquette_1.h('b', "Age " + msg.age + " "), msg.m); }));
         };
         return LogComponent;
     }(SimpleComponent));

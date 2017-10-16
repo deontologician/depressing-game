@@ -37,11 +37,12 @@ export class FullGameComponent extends SimpleComponent<DepressingState> {
 
   render(): VNode {
     return h('div.tile.is-ancestor', {key: this}, [
-      h('div.tile.is-parent',
+      // The "is-X" classes have to sum to 12
+      h('div.tile.is-parent.is-2',
         h('div.tile.is-child', this.outputList.render())),
-      h('div.tile.is-parent',
+      h('div.tile.is-parent.is-3',
         h('div.tile.is-child', this.inputForm.render())),
-      h('div.tile.is-parent',
+      h('div.tile.is-parent.is-7',
         h('div.tile.is-child', this.log.render())),
     ])
   }
@@ -175,7 +176,7 @@ export class LogComponent extends SimpleComponent<DepressingState> {
   render(): VNode {
     return h('div.eventlog', this.state.getLogs()
              .map(msg => h('p', {key: msg.id},
-                           h('b', `Age ${msg.age}`),
+                           h('b', `Age ${msg.age} `),
                            msg.m)))
   }
 }
