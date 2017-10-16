@@ -109,12 +109,12 @@ export class GameLogic {
 
   private updateSalary() {
     let raisePercent = 1 + Math.random() * 0.16 - 0.04
-    if (raisePercent > 1.09) {
-      this.log('You received a large raise')
-    } else if (raisePercent < 1) {
-      this.log('You were fired and got a new job at a lower salary.')
-    }
     this.state.salary = Math.round(this.state.salary * raisePercent)
+    if (raisePercent > 1.09) {
+      this.log(`You received a large raise to: $${commas(this.state.salary)}`)
+    } else if (raisePercent < 1) {
+      this.log(`You were fired and got a new job at a lower salary: $${commas(this.state.salary)}`)
+    }
   }
 
   private updateCapitalGains() {

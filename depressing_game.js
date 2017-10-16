@@ -1115,13 +1115,13 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data"], f
         };
         GameLogic.prototype.updateSalary = function () {
             var raisePercent = 1 + Math.random() * 0.16 - 0.04;
+            this.state.salary = Math.round(this.state.salary * raisePercent);
             if (raisePercent > 1.09) {
-                this.log('You received a large raise');
+                this.log("You received a large raise to: $" + utils_2.commas(this.state.salary));
             }
             else if (raisePercent < 1) {
-                this.log('You were fired and got a new job at a lower salary.');
+                this.log("You were fired and got a new job at a lower salary: $" + utils_2.commas(this.state.salary));
             }
-            this.state.salary = Math.round(this.state.salary * raisePercent);
         };
         GameLogic.prototype.updateCapitalGains = function () {
             this.state.capital_gains = Math.round(this.state.invested * 0.05);
