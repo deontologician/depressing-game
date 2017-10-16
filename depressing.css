@@ -88,3 +88,8 @@ input[type=range]:focus::-ms-fill-upper {
 .container {
     display: grid;
 }
+
+.eventlog {
+    max-height: 200px;
+    overflow: auto;
+}
