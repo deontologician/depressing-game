@@ -2,21 +2,21 @@ import { commas } from './utils'
 import { DepressingState } from './depressing_state'
 import { VERY_DEPRESSING_DATA } from './depressing_data'
 
-export interface AdvanceYearAction {
+interface AdvanceYearAction {
   kind: 'advance_year'
 }
 
-export interface ProposeDebtPaymentAction {
+interface ProposeDebtPaymentAction {
   kind: 'propose_debt_payment'
   debtAmount: number
 }
 
-export interface ProposeInvestmentAction {
+interface ProposeInvestmentAction {
   kind: 'propose_investment'
   investAmount: number
 }
 
-export interface LogAction {
+interface LogAction {
   kind: 'log'
   message: string
 }
@@ -41,10 +41,10 @@ export class GameLogic {
       this.advanceYear()
       break
     case 'propose_investment':
-      this.state.proposed.updateInvest(sa.investAmount)
+      this.updateInvest(sa.investAmount)
       break
     case 'propose_debt_payment':
-      this.state.proposed.updatePayDebt(sa.debtAmount)
+      this.updatePayDebt(sa.debtAmount)
       break
     case 'log':
       this.log(sa.message)
@@ -135,5 +135,21 @@ export class GameLogic {
 
   private log(message: string) {
     this.state.logger.record(this.state.age, message)
+  }
+
+  private updateInvest(investAmount: number) {
+    this.state.proposed.invest = investAmount
+    let ready_cash = this.state.proposed.cash - this.state.proposed.pay_debt
+    if (investAmount > ready_cash) {
+      this.state.proposed.pay_debt += ready_cash - investAmount
+    }
+  }
+
+  private updatePayDebt(debtAmount: number) {
+    this.state.proposed.pay_debt = debtAmount
+    let ready_cash = this.state.proposed.cash - this.state.proposed.invest
+    if (debtAmount > ready_cash) {
+      this.state.proposed.invest += ready_cash - debtAmount
+    }
   }
 }

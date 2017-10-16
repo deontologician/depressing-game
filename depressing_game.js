@@ -1022,20 +1022,6 @@ define("depressing_state", ["require", "exports", "utils", "depressing_data"], f
             this.pay_debt = Math.min(this.cash, 12);
             this.invest = Math.min(12, utils_1.satsub(this.cash, this.pay_debt));
         };
-        ProposedState.prototype.updateInvest = function (investAmount) {
-            this.invest = investAmount;
-            var ready_cash = this.cash - this.pay_debt;
-            if (investAmount > ready_cash) {
-                this.pay_debt += ready_cash - investAmount;
-            }
-        };
-        ProposedState.prototype.updatePayDebt = function (debtAmount) {
-            this.pay_debt = debtAmount;
-            var ready_cash = this.cash - this.invest;
-            if (debtAmount > ready_cash) {
-                this.invest += ready_cash - debtAmount;
-            }
-        };
         return ProposedState;
     }());
     exports.ProposedState = ProposedState;
@@ -1065,10 +1051,10 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data"], f
                     this.advanceYear();
                     break;
                 case 'propose_investment':
-                    this.state.proposed.updateInvest(sa.investAmount);
+                    this.updateInvest(sa.investAmount);
                     break;
                 case 'propose_debt_payment':
-                    this.state.proposed.updatePayDebt(sa.debtAmount);
+                    this.updatePayDebt(sa.debtAmount);
                     break;
                 case 'log':
                     this.log(sa.message);
@@ -1151,6 +1137,20 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data"], f
         };
         GameLogic.prototype.log = function (message) {
             this.state.logger.record(this.state.age, message);
+        };
+        GameLogic.prototype.updateInvest = function (investAmount) {
+            this.state.proposed.invest = investAmount;
+            var ready_cash = this.state.proposed.cash - this.state.proposed.pay_debt;
+            if (investAmount > ready_cash) {
+                this.state.proposed.pay_debt += ready_cash - investAmount;
+            }
+        };
+        GameLogic.prototype.updatePayDebt = function (debtAmount) {
+            this.state.proposed.pay_debt = debtAmount;
+            var ready_cash = this.state.proposed.cash - this.state.proposed.invest;
+            if (debtAmount > ready_cash) {
+                this.state.proposed.invest += ready_cash - debtAmount;
+            }
         };
         return GameLogic;
     }());
