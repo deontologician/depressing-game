@@ -1009,83 +1009,6 @@ define("depressing_state", ["require", "exports", "utils", "depressing_data"], f
             this.logger = new DepressingLog();
             this.proposed = new ProposedState(this);
         }
-        DepressingState.prototype.log = function (message) {
-            this.logger.record(this.age, message);
-        };
-        DepressingState.prototype.getLogs = function () {
-            return this.logger.allLogs();
-        };
-        DepressingState.prototype.decideIfDead = function () {
-            if (Math.random() <=
-                depressing_data_1.VERY_DEPRESSING_DATA.death_rates[this.age][this.sex]) {
-                this.dead = true;
-            }
-        };
-        DepressingState.prototype.updateSalary = function () {
-            var raisePercent = 1 + Math.random() * 0.16 - 0.04;
-            if (raisePercent > 1.09) {
-                this.log('You received a large raise');
-            }
-            else if (raisePercent < 1) {
-                this.log('You were fired and got a new job at a lower salary.');
-            }
-            this.salary = Math.round(this.salary * raisePercent);
-        };
-        DepressingState.prototype.updateCapitalGains = function () {
-            this.capital_gains = Math.round(this.invested * 0.05);
-        };
-        DepressingState.prototype.doInvestment = function () {
-            if (this.proposed.invest > 0) {
-                this.cash -= this.proposed.invest;
-                this.invested += this.proposed.invest;
-            }
-        };
-        DepressingState.prototype.doDebt = function () {
-            if (this.proposed.pay_debt > 0) {
-                this.cash -= this.proposed.pay_debt;
-                this.debt += this.proposed.pay_debt;
-            }
-            this.debt = Math.round(this.debt * 1.04);
-        };
-        DepressingState.prototype.updateCash = function () {
-            this.cash += this.salary + this.capital_gains;
-            if (this.expenses > this.cash) {
-                var shortfall = this.expenses - this.cash;
-                this.cash = 0;
-                if (shortfall > this.invested) {
-                    var debt = shortfall - this.invested;
-                    if (this.invested > 0) {
-                        this.log("Had to go into debt -$" + utils_1.commas(debt) + ". Savings wiped out.");
-                        this.invested = 0;
-                    }
-                    else {
-                        this.log("Had to go into debt -$" + utils_1.commas(debt) + ".");
-                    }
-                    this.debt -= debt;
-                }
-                else {
-                    this.log("Not enough cash for expenses. Eating into investment principle $" + utils_1.commas(shortfall) + ".");
-                    this.invested -= shortfall;
-                }
-            }
-            else {
-                this.cash -= this.expenses;
-            }
-        };
-        DepressingState.prototype.updateExpenses = function () {
-            this.expenses = Math.round(this.expenses * (1 + depressing_data_1.VERY_DEPRESSING_DATA.inflation));
-        };
-        DepressingState.prototype.doRound = function () {
-            this.age += 1;
-            this.doInvestment();
-            this.doDebt();
-            this.updateCash();
-            this.updateSalary();
-            this.updateCapitalGains();
-            this.updateExpenses();
-            this.proposed.reset(this);
-            this.decideIfDead();
-        };
         return DepressingState;
     }());
     exports.DepressingState = DepressingState;
@@ -1402,7 +1325,7 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
             return _super !== null && _super.apply(this, arguments) || this;
         }
         LogComponent.prototype.render = function () {
-            return maquette_1.h('div.eventlog', this.state.getLogs()
+            return maquette_1.h('div.eventlog', this.state.logger.allLogs()
                 .map(function (msg) { return maquette_1.h('p', { key: msg.id }, maquette_1.h('b', "Age " + msg.age + " "), msg.m); }));
         };
         return LogComponent;

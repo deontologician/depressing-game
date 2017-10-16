@@ -192,7 +192,7 @@ export class InvestFormComponent extends SimpleComponent<DepressingState> {
 
 export class LogComponent extends SimpleComponent<DepressingState> {
   render(): VNode {
-    return h('div.eventlog', this.state.getLogs()
+    return h('div.eventlog', this.state.logger.allLogs()
              .map(msg => h('p', {key: msg.id},
                            h('b', `Age ${msg.age} `),
                            msg.m)))
