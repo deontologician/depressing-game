@@ -981,6 +981,16 @@ define("utils", ["require", "exports"], function (require, exports) {
         return Math.max(a - b, 0);
     }
     exports.satsub = satsub;
+    function unwrapInt(func) {
+        return function (ev) {
+            var target = ev.target;
+            if (!(target instanceof HTMLInputElement)) {
+                return;
+            }
+            return func(parseInt(target.value));
+        };
+    }
+    exports.unwrapInt = unwrapInt;
 });
 define("depressing_state", ["require", "exports", "utils", "depressing_data"], function (require, exports, utils_1, depressing_data_1) {
     "use strict";
@@ -1089,28 +1099,18 @@ define("depressing_state", ["require", "exports", "utils", "depressing_data"], f
             this.pay_debt = Math.min(this.cash, 12);
             this.invest = Math.min(12, utils_1.satsub(this.cash, this.pay_debt));
         };
-        ProposedState.prototype.updateInvest = function (evt) {
-            var target = evt.target;
-            if (!(target instanceof HTMLInputElement)) {
-                return;
-            }
-            var amount = parseInt(target.value);
-            this.invest = amount;
+        ProposedState.prototype.updateInvest = function (investAmount) {
+            this.invest = investAmount;
             var ready_cash = this.cash - this.pay_debt;
-            if (amount > ready_cash) {
-                this.pay_debt += ready_cash - amount;
+            if (investAmount > ready_cash) {
+                this.pay_debt += ready_cash - investAmount;
             }
         };
-        ProposedState.prototype.updatePayDebt = function (evt) {
-            var target = evt.target;
-            if (!(target instanceof HTMLInputElement)) {
-                return;
-            }
-            var amount = parseInt(target.value);
-            this.pay_debt = amount;
+        ProposedState.prototype.updatePayDebt = function (debtAmount) {
+            this.pay_debt = debtAmount;
             var ready_cash = this.cash - this.invest;
-            if (amount > ready_cash) {
-                this.invest += ready_cash - amount;
+            if (debtAmount > ready_cash) {
+                this.invest += ready_cash - debtAmount;
             }
         };
         return ProposedState;
@@ -1129,12 +1129,117 @@ define("depressing_state", ["require", "exports", "utils", "depressing_data"], f
         return DepressingLog;
     }());
 });
-define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"], function (require, exports, maquette_1, utils_2) {
+define("depressing_logic", ["require", "exports", "utils", "depressing_data"], function (require, exports, utils_2, depressing_data_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var GameLogic = /** @class */ (function () {
+        function GameLogic(state) {
+            this.state = state;
+        }
+        GameLogic.prototype.broadcast = function (sa) {
+            switch (sa.kind) {
+                case 'advance_year':
+                    this.advanceYear();
+                    break;
+                case 'propose_investment':
+                    this.state.proposed.updateInvest(sa.investAmount);
+                    break;
+                case 'propose_debt_payment':
+                    this.state.proposed.updatePayDebt(sa.debtAmount);
+                    break;
+                case 'log':
+                    this.log(sa.message);
+                    break;
+            }
+        };
+        GameLogic.prototype.broadcaster = function () {
+            return this.broadcast.bind(this);
+        };
+        GameLogic.prototype.advanceYear = function () {
+            this.state.age += 1;
+            this.doInvestment();
+            this.doDebt();
+            this.updateCash();
+            this.updateSalary();
+            this.updateCapitalGains();
+            this.updateExpenses();
+            this.state.proposed.reset(this.state);
+            this.decideIfDead();
+        };
+        GameLogic.prototype.doInvestment = function () {
+            if (this.state.proposed.invest > 0) {
+                this.state.cash -= this.state.proposed.invest;
+                this.state.invested += this.state.proposed.invest;
+            }
+        };
+        GameLogic.prototype.doDebt = function () {
+            if (this.state.proposed.pay_debt > 0) {
+                this.state.cash -= this.state.proposed.pay_debt;
+                this.state.debt += this.state.proposed.pay_debt;
+            }
+            this.state.debt = Math.round(this.state.debt * 1.04);
+        };
+        GameLogic.prototype.updateCash = function () {
+            this.state.cash += this.state.salary + this.state.capital_gains;
+            if (this.state.expenses > this.state.cash) {
+                var shortfall = this.state.expenses - this.state.cash;
+                this.state.cash = 0;
+                if (shortfall > this.state.invested) {
+                    var debt = shortfall - this.state.invested;
+                    if (this.state.invested > 0) {
+                        this.log("Had to go into debt -$" + utils_2.commas(debt) + ". Savings wiped out.");
+                        this.state.invested = 0;
+                    }
+                    else {
+                        this.log("Had to go into debt -$" + utils_2.commas(debt) + ".");
+                    }
+                    this.state.debt -= debt;
+                }
+                else {
+                    this.log("Not enough cash for expenses. Eating into investment principle $" + utils_2.commas(shortfall) + ".");
+                    this.state.invested -= shortfall;
+                }
+            }
+            else {
+                this.state.cash -= this.state.expenses;
+            }
+        };
+        GameLogic.prototype.updateSalary = function () {
+            var raisePercent = 1 + Math.random() * 0.16 - 0.04;
+            if (raisePercent > 1.09) {
+                this.log('You received a large raise');
+            }
+            else if (raisePercent < 1) {
+                this.log('You were fired and got a new job at a lower salary.');
+            }
+            this.state.salary = Math.round(this.state.salary * raisePercent);
+        };
+        GameLogic.prototype.updateCapitalGains = function () {
+            this.state.capital_gains = Math.round(this.state.invested * 0.05);
+        };
+        GameLogic.prototype.updateExpenses = function () {
+            this.state.expenses = Math.round(this.state.expenses * (1 + depressing_data_2.VERY_DEPRESSING_DATA.inflation));
+        };
+        GameLogic.prototype.decideIfDead = function () {
+            if (Math.random() <=
+                depressing_data_2.VERY_DEPRESSING_DATA.death_rates[this.state.age][this.state.sex]) {
+                this.state.dead = true;
+            }
+        };
+        GameLogic.prototype.log = function (message) {
+            this.state.logger.record(this.state.age, message);
+        };
+        return GameLogic;
+    }());
+    exports.GameLogic = GameLogic;
+});
+define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"], function (require, exports, maquette_1, utils_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Component = /** @class */ (function () {
-        function Component(state) {
+        function Component(state, broadcast) {
             this.state = state;
+            this.broadcast = broadcast;
             this.uistate = this.initUIState();
         }
         return Component;
@@ -1159,19 +1264,19 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
     exports.ConstComponent = ConstComponent;
     var FullGameComponent = /** @class */ (function (_super) {
         __extends(FullGameComponent, _super);
-        function FullGameComponent(state) {
-            var _this = _super.call(this, state) || this;
-            _this.outputList = new OutputListComponent(_this.state);
-            _this.inputForm = new InputFormComponent(_this.state);
-            _this.log = new LogComponent(_this.state);
+        function FullGameComponent(state, broadcast) {
+            var _this = _super.call(this, state, broadcast) || this;
+            _this.outputList = new OutputListComponent(_this.state, broadcast);
+            _this.inputForm = new InputFormComponent(_this.state, broadcast);
+            _this.log = new LogComponent(_this.state, broadcast);
             return _this;
         }
         FullGameComponent.prototype.render = function () {
             return maquette_1.h('div.tile.is-ancestor', { key: this }, [
                 // The "is-X" classes have to sum to 12
-                maquette_1.h('div.tile.is-parent.is-2', maquette_1.h('div.tile.is-child', this.outputList.render())),
-                maquette_1.h('div.tile.is-parent.is-3', maquette_1.h('div.tile.is-child', this.inputForm.render())),
-                maquette_1.h('div.tile.is-parent.is-7', maquette_1.h('div.tile.is-child', this.log.render())),
+                maquette_1.h('div.tile.is-parent.is-3', maquette_1.h('div.tile.is-child.box', this.outputList.render())),
+                maquette_1.h('div.tile.is-parent.is-3', maquette_1.h('div.tile.is-child.box', this.inputForm.render())),
+                maquette_1.h('div.tile.is-parent.is-6', maquette_1.h('div.tile.is-child.box', this.log.render())),
             ]);
         };
         return FullGameComponent;
@@ -1200,36 +1305,42 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
         OutputListComponent.prototype.expenses = function () { return this.makeli$('Expenses', this.state.expenses); };
         OutputListComponent.prototype.salary = function () { return this.makeli$('Salary', this.state.salary); };
         OutputListComponent.prototype.capitalGains = function () {
-            if (this.state.capital_gains > 0) {
-                return this.makeli$('Capital gains', this.state.capital_gains);
+            if (this.state.capital_gains <= 0) {
+                return;
             }
+            return this.makeli$('Capital gains', this.state.capital_gains);
         };
         OutputListComponent.prototype.investments = function () {
-            if (this.state.invested > 0) {
-                return this.makeli$('Investments', this.state.invested);
+            if (this.state.invested <= 0) {
+                return;
             }
+            return this.makeli$('Investments', this.state.invested);
         };
         OutputListComponent.prototype.debt = function () {
-            if (this.state.debt < 0) {
-                return this.makeli$('Debt', this.state.debt);
+            if (this.state.debt >= 0) {
+                return;
             }
+            return this.makeli$('Debt', this.state.debt);
         };
         OutputListComponent.prototype.makeli$ = function (title, value) {
-            return maquette_1.h('li', { key: title }, [title + ": $" + utils_2.commas(value)]);
+            return maquette_1.h('li', { key: title }, [title + ": $" + utils_3.commas(value)]);
         };
         OutputListComponent.prototype.makeli = function (title, value) {
-            return maquette_1.h('li', { key: title }, [title + ": " + utils_2.commas(value)]);
+            return maquette_1.h('li', { key: title }, [title + ": " + utils_3.commas(value)]);
         };
         return OutputListComponent;
     }(SimpleComponent));
     exports.OutputListComponent = OutputListComponent;
     var InputFormComponent = /** @class */ (function (_super) {
         __extends(InputFormComponent, _super);
-        function InputFormComponent(state) {
-            var _this = _super.call(this, state) || this;
-            _this.investForm = new InvestFormComponent(_this.state);
-            _this.buttonClick = function () { return _this.state.doRound(); };
+        function InputFormComponent(state, broadcast) {
+            var _this = _super.call(this, state, broadcast) || this;
+            _this.investForm = new InvestFormComponent(_this.state, broadcast);
+            _this.buttonClick = function () {
+                broadcast({ kind: 'advance_year' });
+            };
             return _this;
+            //this.buttonClick = () => this.state.doRound()
         }
         InputFormComponent.prototype.render = function () {
             if (this.state.dead) {
@@ -1244,24 +1355,35 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
     exports.InputFormComponent = InputFormComponent;
     var InvestFormComponent = /** @class */ (function (_super) {
         __extends(InvestFormComponent, _super);
-        function InvestFormComponent() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function InvestFormComponent(state, broadcast) {
+            var _this = _super.call(this, state, broadcast) || this;
+            _this.investUpdate = utils_3.unwrapInt(function (investAmount) { return broadcast({
+                kind: 'propose_investment',
+                investAmount: investAmount,
+            }); });
+            _this.debtUpdate = utils_3.unwrapInt(function (debtAmount) { return broadcast({
+                kind: 'propose_debt_payment',
+                debtAmount: debtAmount
+            }); });
+            return _this;
         }
         InvestFormComponent.prototype.render = function () {
             return maquette_1.h('form', maquette_1.h('div.form-group', this.investSlider(), this.debtSlider()));
         };
         InvestFormComponent.prototype.investSlider = function () {
-            if (this.state.cash > 0) {
-                return maquette_1.h('label', { key: 'label-invest' }, "Invest $" + utils_2.commas(this.state.proposed.invest), this.rangeSlider(this.state.proposed, 'invest', this.state.proposed.updateInvest, this.state.cash));
+            if (this.state.cash <= 0) {
+                return;
             }
+            return maquette_1.h('div.field', maquette_1.h('label', { key: 'label-invest' }, "Invest $" + utils_3.commas(this.state.proposed.invest), this.rangeSlider(this.state.proposed, 'invest', this.investUpdate, this.state.cash)));
         };
         InvestFormComponent.prototype.debtSlider = function () {
-            if (this.state.cash > 0 && this.state.debt < 0) {
-                return maquette_1.h('label', { key: 'label-pay-debt' }, "Pay debt $" + utils_2.commas(this.state.proposed.pay_debt), this.rangeSlider(this.state.proposed, 'pay_debt', this.state.proposed.updatePayDebt, Math.min(-this.state.debt, this.state.cash)));
+            if (this.state.cash <= 0 || this.state.debt >= 0) {
+                return;
             }
+            return maquette_1.h('label', { key: 'label-pay-debt' }, "Pay debt $" + utils_3.commas(this.state.proposed.pay_debt), this.rangeSlider(this.state.proposed, 'pay_debt', this.debtUpdate, Math.min(-this.state.debt, this.state.cash)));
         };
         InvestFormComponent.prototype.rangeSlider = function (state, prop, updateFunc, max) {
-            return maquette_1.h('input.slider', {
+            return maquette_1.h('div.control', maquette_1.h('input.slider', {
                 type: 'range',
                 min: 0,
                 max: max,
@@ -1269,8 +1391,7 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
                 key: prop,
                 value: state[prop].toString(),
                 oninput: updateFunc,
-                bind: state,
-            });
+            }));
         };
         return InvestFormComponent;
     }(SimpleComponent));
@@ -1288,14 +1409,16 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
     }(SimpleComponent));
     exports.LogComponent = LogComponent;
 });
-define("depressing_game", ["require", "exports", "depressing_data", "depressing_ui", "depressing_state", "third-party/maquette"], function (require, exports, depressing_data_2, depressing_ui_1, depressing_state_1, maquette_2) {
+define("depressing_game", ["require", "exports", "depressing_data", "depressing_ui", "depressing_state", "depressing_logic", "third-party/maquette"], function (require, exports, depressing_data_3, depressing_ui_1, depressing_state_1, depressing_logic_1, maquette_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DepressingGame = /** @class */ (function () {
         function DepressingGame() {
-            this.data = depressing_data_2.VERY_DEPRESSING_DATA;
+            this.data = depressing_data_3.VERY_DEPRESSING_DATA;
             this.state = new depressing_state_1.DepressingState();
-            this.fullGame = new depressing_ui_1.FullGameComponent(this.state);
+            this.gameLogic = new depressing_logic_1.GameLogic(this.state);
+            this.broadcaster = this.gameLogic.broadcaster();
+            this.fullGame = new depressing_ui_1.FullGameComponent(this.state, this.broadcaster);
         }
         DepressingGame.prototype.render = function () {
             return this.fullGame.render();
@@ -1314,3 +1437,4 @@ define("depressing_game", ["require", "exports", "depressing_data", "depressing_
     }
     exports.initialize = initialize;
 });
+//# sourceMappingURL=depressing_game.js.map

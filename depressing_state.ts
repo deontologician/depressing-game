@@ -1,5 +1,5 @@
 import { satsub, commas } from './utils'
-import { VeryDepressingData, VERY_DEPRESSING_DATA } from './depressing_data'
+import { VERY_DEPRESSING_DATA } from './depressing_data'
 
 export class DepressingState {
   age: number = 18
@@ -112,19 +112,6 @@ export class DepressingState {
   }
 }
 
-
-interface ProposedStateFields {
-  cash: number
-  debt: number
-  pay_debt: number
-  invest: number
-}
-
-interface ProposedStateUpdates {
-  updateInvest: (evt:Event)=>void,
-  updatePayDebt: (evt:Event)=>void,
-}
-
 export class ProposedState {
 
   cash: number
@@ -143,29 +130,19 @@ export class ProposedState {
     this.invest = Math.min(12, satsub(this.cash, this.pay_debt))
   }
 
-  updateInvest(evt: Event) {
-    let target = evt.target
-    if (!(target instanceof HTMLInputElement)) {
-      return
-    }
-    let amount = parseInt(target.value)
-    this.invest = amount
+  updateInvest(investAmount: number) {
+    this.invest = investAmount
     let ready_cash = this.cash - this.pay_debt
-    if (amount > ready_cash) {
-      this.pay_debt += ready_cash - amount
+    if (investAmount > ready_cash) {
+      this.pay_debt += ready_cash - investAmount
     }
   }
 
-  updatePayDebt(evt:Event) {
-    let target = evt.target
-    if (!(target instanceof HTMLInputElement)) {
-      return
-    }
-    let amount = parseInt(target.value)
-    this.pay_debt = amount
+  updatePayDebt(debtAmount: number) {
+    this.pay_debt = debtAmount
     let ready_cash = this.cash - this.invest
-    if (amount > ready_cash) {
-      this.invest += ready_cash - amount
+    if (debtAmount > ready_cash) {
+      this.invest += ready_cash - debtAmount
     }
   }
 }

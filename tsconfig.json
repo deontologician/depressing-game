@@ -3,11 +3,17 @@
     "module": "amd",
     "moduleResolution": "Node",
     "target": "es5",
-    "noImplicitAny": false,
-    "sourceMap": false,
-    "strictNullChecks": true,
+    "sourceMap": true,
     "outFile": "depressing_game.js",
-    "noImplicitAny" : true
+
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
   "files": [
     "depressing_game.ts",

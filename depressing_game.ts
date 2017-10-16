@@ -1,8 +1,9 @@
 import { VeryDepressingData, VERY_DEPRESSING_DATA } from './depressing_data'
 import { FullGameComponent } from './depressing_ui'
 import { DepressingState } from './depressing_state'
+import { GameLogic, Broadcaster } from './depressing_logic'
 
-import { h, createProjector } from './third-party/maquette'
+import { createProjector } from './third-party/maquette'
 
 declare global {
   interface Window { game: DepressingGame; }
@@ -11,12 +12,16 @@ declare global {
 class DepressingGame {
   data: VeryDepressingData
   state: DepressingState
+  gameLogic: GameLogic
+  broadcaster: Broadcaster
   fullGame: FullGameComponent
 
   constructor() {
     this.data = VERY_DEPRESSING_DATA
     this.state = new DepressingState()
-    this.fullGame= new FullGameComponent(this.state)
+    this.gameLogic = new GameLogic(this.state)
+    this.broadcaster = this.gameLogic.broadcaster()
+    this.fullGame = new FullGameComponent(this.state, this.broadcaster)
   }
 
   render() {
