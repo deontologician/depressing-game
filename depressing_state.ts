@@ -48,7 +48,7 @@ export class ProposedState {
 }
 
 
-class DepressingLog {
+export class DepressingLog {
   _log: Array<{m: string, id: number, age: number}>
 
   constructor() {

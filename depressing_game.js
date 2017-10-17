@@ -8,11 +8,18 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 define("depressing_data", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.VERY_DEPRESSING_DATA = {
-        preamble: "You know how to play",
         inflation: 0.03,
         // http://cost-of-living.careertrends.com/l/615/The-United-States
         cost_of_living: 28458,
@@ -1037,13 +1044,102 @@ define("depressing_state", ["require", "exports", "utils", "depressing_data"], f
         };
         return DepressingLog;
     }());
+    exports.DepressingLog = DepressingLog;
 });
-define("depressing_logic", ["require", "exports", "utils", "depressing_data"], function (require, exports, utils_2, depressing_data_2) {
+define("new_hotness", ["require", "exports", "depressing_state", "utils", "depressing_data"], function (require, exports, depressing_state_1, utils_2, depressing_data_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Person = /** @class */ (function () {
+        function Person(name) {
+            this.cash = new CashAccount();
+            this.investments = [];
+            this.debts = [];
+            this.dead = false;
+            this.age = 18;
+            this.job = new Job(this, depressing_data_2.VERY_DEPRESSING_DATA.cost_of_living);
+            this.hedons = 0;
+            this.dolors = 0;
+            this.logger = new depressing_state_1.DepressingLog();
+            this.name = name;
+            this.logger = new depressing_state_1.DepressingLog();
+        }
+        Person.prototype.log = function (message) {
+            this.logger.record(this.age, message);
+        };
+        return Person;
+    }());
+    exports.Person = Person;
+    var Account = /** @class */ (function () {
+        function Account(opts) {
+            this.name = opts.name;
+            this._balance = opts.startingBalance || 0;
+            this.minBalance = opts.minBalance || 0;
+            this.maxBalance = opts.maxBalance || Infinity;
+            this.interestRate = opts.interestRate || 0;
+        }
+        Object.defineProperty(Account.prototype, "balance", {
+            get: function () {
+                return this._balance;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Account;
+    }());
+    exports.Account = Account;
+    var CashAccount = /** @class */ (function (_super) {
+        __extends(CashAccount, _super);
+        function CashAccount() {
+            return _super.call(this, { name: 'cash' }) || this;
+        }
+        return CashAccount;
+    }(Account));
+    exports.CashAccount = CashAccount;
+    var CreditAccount = /** @class */ (function (_super) {
+        __extends(CreditAccount, _super);
+        function CreditAccount(opts) {
+            return _super.call(this, __assign({ maxBalance: 0 }, opts)) || this;
+        }
+        return CreditAccount;
+    }(Account));
+    exports.CreditAccount = CreditAccount;
+    var InvestmentAccount = /** @class */ (function (_super) {
+        __extends(InvestmentAccount, _super);
+        function InvestmentAccount(opts) {
+            return _super.call(this, opts) || this;
+        }
+        return InvestmentAccount;
+    }(Account));
+    exports.InvestmentAccount = InvestmentAccount;
+    var Job = /** @class */ (function () {
+        function Job(worker, salary) {
+            this.salary = salary;
+            this.worker = worker;
+            this.jobStability = 0.90;
+        }
+        Job.prototype.salaryReview = function () {
+            if (Math.random() > this.jobStability) {
+                var lossPercent = 1 - Math.random() * 0.04;
+                this.salary = Math.round(this.salary * lossPercent);
+                this.worker.log("You were fired and got a new job at a lower salary: $" + utils_2.commas(this.salary));
+            }
+            else {
+                var raisePercent = 1 + Math.random() * 0.14;
+                this.salary = Math.round(this.salary * raisePercent);
+                this.worker.log("You received a large raise to: $" + utils_2.commas(this.salary));
+            }
+        };
+        return Job;
+    }());
+    exports.Job = Job;
+});
+define("depressing_logic", ["require", "exports", "utils", "depressing_data", "new_hotness"], function (require, exports, utils_3, depressing_data_3, new_hotness_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var GameLogic = /** @class */ (function () {
         function GameLogic(state) {
             this.state = state;
+            this.person_deleteme = new new_hotness_1.Person('Johnny');
         }
         GameLogic.prototype.broadcast = function (sa) {
             switch (sa.kind) {
@@ -1096,16 +1192,16 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data"], f
                 if (shortfall > this.state.invested) {
                     var debt = shortfall - this.state.invested;
                     if (this.state.invested > 0) {
-                        this.log("Had to go into debt -$" + utils_2.commas(debt) + ". Savings wiped out.");
+                        this.log("Had to go into debt -$" + utils_3.commas(debt) + ". Savings wiped out.");
                         this.state.invested = 0;
                     }
                     else {
-                        this.log("Had to go into debt -$" + utils_2.commas(debt) + ".");
+                        this.log("Had to go into debt -$" + utils_3.commas(debt) + ".");
                     }
                     this.state.debt -= debt;
                 }
                 else {
-                    this.log("Not enough cash for expenses. Eating into investment principle $" + utils_2.commas(shortfall) + ".");
+                    this.log("Not enough cash for expenses. Eating into investment principle $" + utils_3.commas(shortfall) + ".");
                     this.state.invested -= shortfall;
                 }
             }
@@ -1117,21 +1213,21 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data"], f
             var raisePercent = 1 + Math.random() * 0.16 - 0.04;
             this.state.salary = Math.round(this.state.salary * raisePercent);
             if (raisePercent > 1.09) {
-                this.log("You received a large raise to: $" + utils_2.commas(this.state.salary));
+                this.log("You received a large raise to: $" + utils_3.commas(this.state.salary));
             }
             else if (raisePercent < 1) {
-                this.log("You were fired and got a new job at a lower salary: $" + utils_2.commas(this.state.salary));
+                this.log("You were fired and got a new job at a lower salary: $" + utils_3.commas(this.state.salary));
             }
         };
         GameLogic.prototype.updateCapitalGains = function () {
             this.state.capital_gains = Math.round(this.state.invested * 0.05);
         };
         GameLogic.prototype.updateExpenses = function () {
-            this.state.expenses = Math.round(this.state.expenses * (1 + depressing_data_2.VERY_DEPRESSING_DATA.inflation));
+            this.state.expenses = Math.round(this.state.expenses * (1 + depressing_data_3.VERY_DEPRESSING_DATA.inflation));
         };
         GameLogic.prototype.decideIfDead = function () {
             if (Math.random() <=
-                depressing_data_2.VERY_DEPRESSING_DATA.death_rates[this.state.age][this.state.sex]) {
+                depressing_data_3.VERY_DEPRESSING_DATA.death_rates[this.state.age][this.state.sex]) {
                 this.state.dead = true;
             }
         };
@@ -1156,7 +1252,7 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data"], f
     }());
     exports.GameLogic = GameLogic;
 });
-define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"], function (require, exports, maquette_1, utils_3) {
+define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"], function (require, exports, maquette_1, utils_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Component = /** @class */ (function () {
@@ -1246,10 +1342,10 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
             return this.makeli$('Debt', this.state.debt);
         };
         OutputListComponent.prototype.makeli$ = function (title, value) {
-            return maquette_1.h('li', { key: title }, [title + ": $" + utils_3.commas(value)]);
+            return maquette_1.h('li', { key: title }, [title + ": $" + utils_4.commas(value)]);
         };
         OutputListComponent.prototype.makeli = function (title, value) {
-            return maquette_1.h('li', { key: title }, [title + ": " + utils_3.commas(value)]);
+            return maquette_1.h('li', { key: title }, [title + ": " + utils_4.commas(value)]);
         };
         return OutputListComponent;
     }(SimpleComponent));
@@ -1280,11 +1376,11 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
         __extends(InvestFormComponent, _super);
         function InvestFormComponent(state, broadcast) {
             var _this = _super.call(this, state, broadcast) || this;
-            _this.investUpdate = utils_3.unwrapInt(function (investAmount) { return broadcast({
+            _this.investUpdate = utils_4.unwrapInt(function (investAmount) { return broadcast({
                 kind: 'propose_investment',
                 investAmount: investAmount,
             }); });
-            _this.debtUpdate = utils_3.unwrapInt(function (debtAmount) { return broadcast({
+            _this.debtUpdate = utils_4.unwrapInt(function (debtAmount) { return broadcast({
                 kind: 'propose_debt_payment',
                 debtAmount: debtAmount
             }); });
@@ -1297,13 +1393,13 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
             if (this.state.cash <= 0) {
                 return;
             }
-            return maquette_1.h('div.field', maquette_1.h('label', { key: 'label-invest' }, "Invest $" + utils_3.commas(this.state.proposed.invest), this.rangeSlider(this.state.proposed, 'invest', this.investUpdate, this.state.cash)));
+            return maquette_1.h('div.field', maquette_1.h('label', { key: 'label-invest' }, "Invest $" + utils_4.commas(this.state.proposed.invest), this.rangeSlider(this.state.proposed, 'invest', this.investUpdate, this.state.cash)));
         };
         InvestFormComponent.prototype.debtSlider = function () {
             if (this.state.cash <= 0 || this.state.debt >= 0) {
                 return;
             }
-            return maquette_1.h('label', { key: 'label-pay-debt' }, "Pay debt $" + utils_3.commas(this.state.proposed.pay_debt), this.rangeSlider(this.state.proposed, 'pay_debt', this.debtUpdate, Math.min(-this.state.debt, this.state.cash)));
+            return maquette_1.h('label', { key: 'label-pay-debt' }, "Pay debt $" + utils_4.commas(this.state.proposed.pay_debt), this.rangeSlider(this.state.proposed, 'pay_debt', this.debtUpdate, Math.min(-this.state.debt, this.state.cash)));
         };
         InvestFormComponent.prototype.rangeSlider = function (state, prop, updateFunc, max) {
             return maquette_1.h('div.control', maquette_1.h('input.slider', {
@@ -1332,13 +1428,13 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
     }(SimpleComponent));
     exports.LogComponent = LogComponent;
 });
-define("depressing_game", ["require", "exports", "depressing_data", "depressing_ui", "depressing_state", "depressing_logic", "third-party/maquette"], function (require, exports, depressing_data_3, depressing_ui_1, depressing_state_1, depressing_logic_1, maquette_2) {
+define("depressing_game", ["require", "exports", "depressing_data", "depressing_ui", "depressing_state", "depressing_logic", "third-party/maquette"], function (require, exports, depressing_data_4, depressing_ui_1, depressing_state_2, depressing_logic_1, maquette_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DepressingGame = /** @class */ (function () {
         function DepressingGame() {
-            this.data = depressing_data_3.VERY_DEPRESSING_DATA;
-            this.state = new depressing_state_1.DepressingState();
+            this.data = depressing_data_4.VERY_DEPRESSING_DATA;
+            this.state = new depressing_state_2.DepressingState();
             this.gameLogic = new depressing_logic_1.GameLogic(this.state);
             this.broadcaster = this.gameLogic.broadcaster();
             this.fullGame = new depressing_ui_1.FullGameComponent(this.state, this.broadcaster);
@@ -1360,4 +1456,3 @@ define("depressing_game", ["require", "exports", "depressing_data", "depressing_
     }
     exports.initialize = initialize;
 });
-//# sourceMappingURL=depressing_game.js.map

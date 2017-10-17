@@ -3,7 +3,7 @@
     "module": "amd",
     "moduleResolution": "Node",
     "target": "es5",
-    "sourceMap": true,
+    "sourceMap": false,
     "outFile": "depressing_game.js",
 
     "strict": true,

@@ -1,6 +1,5 @@
 export type VeryDepressingData = {
   // Declare types here
-  readonly preamble: string,
   readonly inflation: number,
   readonly cost_of_living: number,
   readonly death_rates: {[age: number]: {male: number, female: number}},
@@ -8,8 +7,6 @@ export type VeryDepressingData = {
 }
 
 export const VERY_DEPRESSING_DATA: VeryDepressingData = {
-
-  preamble: "You know how to play",
   inflation: 0.03,
   // http://cost-of-living.careertrends.com/l/615/The-United-States
   cost_of_living: 28458,

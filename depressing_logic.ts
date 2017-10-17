@@ -1,6 +1,7 @@
 import { commas } from './utils'
 import { DepressingState } from './depressing_state'
 import { VERY_DEPRESSING_DATA } from './depressing_data'
+import { Person } from './new_hotness'
 
 interface AdvanceYearAction {
   kind: 'advance_year'
@@ -30,9 +31,11 @@ export type Broadcaster = (sa: StateAction) => void
 
 export class GameLogic {
   state: DepressingState
+  private person_deleteme: Person
 
   constructor(state: DepressingState) {
     this.state = state
+    this.person_deleteme = new Person('Johnny')
   }
 
   broadcast(sa: StateAction) {
