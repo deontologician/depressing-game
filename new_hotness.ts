@@ -6,7 +6,7 @@ import { VERY_DEPRESSING_DATA } from './depressing_data'
 
 export class Person {
   public readonly name: string
-  public readonly sex: string
+  public readonly sex: 'male' | 'female'
 
   public cash: Account = new CashAccount()
   public investments: Array<InvestmentAccount> = []
@@ -37,6 +37,7 @@ export abstract class Account {
   public readonly interestRate: number
 
   private _balance: number
+  private parent: Account | null // Used to distinguish proposals
 
   constructor(opts: {
     name: string,
@@ -50,10 +51,18 @@ export abstract class Account {
     this.minBalance = opts.minBalance || 0
     this.maxBalance = opts.maxBalance || Infinity
     this.interestRate = opts.interestRate || 0
+    this.parent = null
   }
 
   get balance(): number {
     return this._balance
+  }
+
+  makeProposal() {
+    // Escape from type safety
+    let proposed = new (<any>this.constructor(this))
+    proposed.parent = this
+    return proposed
   }
 }
 
@@ -64,12 +73,24 @@ export class CashAccount extends Account {
 }
 
 export class CreditAccount extends Account {
-  constructor(opts: {
+  private canIncrease: boolean
+
+  constructor({name, minBalance, interestRate, canIncrease}: {
     name: string,
     minBalance: number,
     interestRate: number,
+    canIncrease: boolean,
   }) {
-    super({maxBalance: 0, ...opts})
+    super({maxBalance: 0, name, minBalance, interestRate})
+    this.canIncrease = canIncrease
+  }
+
+  availableDebt() {
+    if (!this.canIncrease) {
+      return 0
+    } else {
+      return this.balance - this.minBalance
+    }
   }
 }
 
@@ -101,5 +122,55 @@ export class Job {
       this.salary = Math.round(this.salary * raisePercent)
       this.worker.log(`You received a large raise to: $${commas(this.salary)}`)
     }
+  }
+}
+
+export class Item {
+  name: string
+  price: number
+}
+
+export class SpendingProposal {
+  public purchases: Array<Item> = []
+  public cash: CashAccount
+  public investments: Array<InvestmentAccount>
+  public debts: Array<CreditAccount>
+
+  private readonly startingTotal: number
+
+  constructor(person: Person) {
+    this.cash = person.cash.makeProposal()
+    this.investments = person.investments.map(i => i.makeProposal())
+    this.debts = person.debts.map(d => d.makeProposal())
+
+    this.startingTotal = this.proposalSum()
+  }
+
+  currentDebt(): number {
+    return this.debts.reduce((total, d) => total + d.balance, 0)
+  }
+
+  availableDebt(): number {
+    return this.debts.reduce((total, d) => total + d.availableDebt(), 0)
+  }
+
+  totalInvestments(): number {
+    return this.investments.reduce((total, i) => total + i.balance, 0)
+  }
+
+  purchasesPrice(): number {
+    return -this.purchases.reduce((total, i) => total + i.price, 0)
+  }
+
+  proposalSum(): number {
+    return this.availableDebt() +
+      this.currentDebt() +
+      this.cash.balance +
+      this.totalInvestments() +
+      this.purchasesPrice()
+  }
+
+  sanityCheck() {
+    this.proposalSum() === this.startingTotal
   }
 }

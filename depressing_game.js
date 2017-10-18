@@ -1,21 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 define("depressing_data", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -172,25 +154,25 @@ define("depressing_data", ["require", "exports"], function (require, exports) {
 define("third-party/maquette", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var NAMESPACE_W3 = 'http://www.w3.org/';
-    var NAMESPACE_SVG = NAMESPACE_W3 + '2000/svg';
-    var NAMESPACE_XLINK = NAMESPACE_W3 + '1999/xlink';
+    const NAMESPACE_W3 = 'http://www.w3.org/';
+    const NAMESPACE_SVG = NAMESPACE_W3 + '2000/svg';
+    const NAMESPACE_XLINK = NAMESPACE_W3 + '1999/xlink';
     // Utilities
-    var emptyArray = [];
-    var extend = function (base, overrides) {
-        var result = {};
+    let emptyArray = [];
+    let extend = (base, overrides) => {
+        let result = {};
         Object.keys(base).forEach(function (key) {
             result[key] = base[key];
         });
         if (overrides) {
-            Object.keys(overrides).forEach(function (key) {
+            Object.keys(overrides).forEach((key) => {
                 result[key] = overrides[key];
             });
         }
         return result;
     };
     // Hyperscript helper functions
-    var same = function (vnode1, vnode2) {
+    let same = (vnode1, vnode2) => {
         if (vnode1.vnodeSelector !== vnode2.vnodeSelector) {
             return false;
         }
@@ -202,7 +184,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         }
         return !vnode1.properties && !vnode2.properties;
     };
-    var toTextVNode = function (data) {
+    let toTextVNode = (data) => {
         return {
             vnodeSelector: '',
             properties: undefined,
@@ -211,9 +193,9 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             domNode: null
         };
     };
-    var appendChildren = function (parentSelector, insertions, main) {
-        for (var i = 0, length_1 = insertions.length; i < length_1; i++) {
-            var item = insertions[i];
+    let appendChildren = function (parentSelector, insertions, main) {
+        for (let i = 0, length = insertions.length; i < length; i++) {
+            let item = insertions[i];
             if (Array.isArray(item)) {
                 appendChildren(parentSelector, item, main);
             }
@@ -228,10 +210,10 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         }
     };
     // Render helper functions
-    var missingTransition = function () {
+    let missingTransition = function () {
         throw new Error('Provide a transitions object to the projectionOptions to do animations');
     };
-    var DEFAULT_PROJECTION_OPTIONS = {
+    const DEFAULT_PROJECTION_OPTIONS = {
         namespace: undefined,
         eventHandlerInterceptor: undefined,
         styleApplyer: function (domNode, styleName, value) {
@@ -243,38 +225,38 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             exit: missingTransition
         }
     };
-    var applyDefaultProjectionOptions = function (projectorOptions) {
+    let applyDefaultProjectionOptions = (projectorOptions) => {
         return extend(DEFAULT_PROJECTION_OPTIONS, projectorOptions);
     };
-    var checkStyleValue = function (styleValue) {
+    let checkStyleValue = (styleValue) => {
         if (typeof styleValue !== 'string') {
             throw new Error('Style values must be strings');
         }
     };
-    var setProperties = function (domNode, properties, projectionOptions) {
+    let setProperties = function (domNode, properties, projectionOptions) {
         if (!properties) {
             return;
         }
-        var eventHandlerInterceptor = projectionOptions.eventHandlerInterceptor;
-        var propNames = Object.keys(properties);
-        var propCount = propNames.length;
-        var _loop_1 = function (i) {
-            var propName = propNames[i];
+        let eventHandlerInterceptor = projectionOptions.eventHandlerInterceptor;
+        let propNames = Object.keys(properties);
+        let propCount = propNames.length;
+        for (let i = 0; i < propCount; i++) {
+            let propName = propNames[i];
             /* tslint:disable:no-var-keyword: edge case */
-            var propValue = properties[propName];
+            let propValue = properties[propName];
             /* tslint:enable:no-var-keyword */
             if (propName === 'className') {
                 throw new Error('Property "className" is not supported, use "class".');
             }
             else if (propName === 'class') {
-                propValue.split(/\s+/).forEach(function (token) { return domNode.classList.add(token); });
+                propValue.split(/\s+/).forEach(token => domNode.classList.add(token));
             }
             else if (propName === 'classes') {
                 // object with string keys and boolean values
-                var classNames = Object.keys(propValue);
-                var classNameCount = classNames.length;
-                for (var j = 0; j < classNameCount; j++) {
-                    var className = classNames[j];
+                let classNames = Object.keys(propValue);
+                let classNameCount = classNames.length;
+                for (let j = 0; j < classNameCount; j++) {
+                    let className = classNames[j];
                     if (propValue[className]) {
                         domNode.classList.add(className);
                     }
@@ -282,11 +264,11 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             }
             else if (propName === 'styles') {
                 // object with string keys and string (!) values
-                var styleNames = Object.keys(propValue);
-                var styleCount = styleNames.length;
-                for (var j = 0; j < styleCount; j++) {
-                    var styleName = styleNames[j];
-                    var styleValue = propValue[styleName];
+                let styleNames = Object.keys(propValue);
+                let styleCount = styleNames.length;
+                for (let j = 0; j < styleCount; j++) {
+                    let styleName = styleNames[j];
+                    let styleValue = propValue[styleName];
                     if (styleValue) {
                         checkStyleValue(styleValue);
                         projectionOptions.styleApplyer(domNode, styleName, styleValue);
@@ -294,7 +276,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                 }
             }
             else if (propName !== 'key' && propValue !== null && propValue !== undefined) {
-                var type = typeof propValue;
+                let type = typeof propValue;
                 if (type === 'function') {
                     if (propName.lastIndexOf('on', 0) === 0) {
                         if (eventHandlerInterceptor) {
@@ -303,7 +285,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                         if (propName === 'oninput') {
                             (function () {
                                 // record the evt.target.value, because IE and Edge sometimes do a requestAnimationFrame between changing value and running oninput
-                                var oldPropValue = propValue;
+                                let oldPropValue = propValue;
                                 propValue = function (evt) {
                                     evt.target['oninput-value'] = evt.target.value; // may be HTMLTextAreaElement as well
                                     oldPropValue.apply(this, [evt]);
@@ -325,36 +307,33 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                     domNode[propName] = propValue;
                 }
             }
-        };
-        for (var i = 0; i < propCount; i++) {
-            _loop_1(i);
         }
     };
-    var updateProperties = function (domNode, previousProperties, properties, projectionOptions) {
+    let updateProperties = function (domNode, previousProperties, properties, projectionOptions) {
         if (!properties) {
             return;
         }
-        var propertiesUpdated = false;
-        var propNames = Object.keys(properties);
-        var propCount = propNames.length;
-        for (var i = 0; i < propCount; i++) {
-            var propName = propNames[i];
+        let propertiesUpdated = false;
+        let propNames = Object.keys(properties);
+        let propCount = propNames.length;
+        for (let i = 0; i < propCount; i++) {
+            let propName = propNames[i];
             // assuming that properties will be nullified instead of missing is by design
-            var propValue = properties[propName];
-            var previousValue = previousProperties[propName];
+            let propValue = properties[propName];
+            let previousValue = previousProperties[propName];
             if (propName === 'class') {
                 if (previousValue !== propValue) {
                     throw new Error('"class" property may not be updated. Use the "classes" property for conditional css classes.');
                 }
             }
             else if (propName === 'classes') {
-                var classList = domNode.classList;
-                var classNames = Object.keys(propValue);
-                var classNameCount = classNames.length;
-                for (var j = 0; j < classNameCount; j++) {
-                    var className = classNames[j];
-                    var on = !!propValue[className];
-                    var previousOn = !!previousValue[className];
+                let classList = domNode.classList;
+                let classNames = Object.keys(propValue);
+                let classNameCount = classNames.length;
+                for (let j = 0; j < classNameCount; j++) {
+                    let className = classNames[j];
+                    let on = !!propValue[className];
+                    let previousOn = !!previousValue[className];
                     if (on === previousOn) {
                         continue;
                     }
@@ -368,12 +347,12 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                 }
             }
             else if (propName === 'styles') {
-                var styleNames = Object.keys(propValue);
-                var styleCount = styleNames.length;
-                for (var j = 0; j < styleCount; j++) {
-                    var styleName = styleNames[j];
-                    var newStyleValue = propValue[styleName];
-                    var oldStyleValue = previousValue[styleName];
+                let styleNames = Object.keys(propValue);
+                let styleCount = styleNames.length;
+                for (let j = 0; j < styleCount; j++) {
+                    let styleName = styleNames[j];
+                    let newStyleValue = propValue[styleName];
+                    let oldStyleValue = previousValue[styleName];
                     if (newStyleValue === oldStyleValue) {
                         continue;
                     }
@@ -392,7 +371,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                     propValue = '';
                 }
                 if (propName === 'value') {
-                    var domValue = domNode[propName];
+                    let domValue = domNode[propName];
                     if (domValue !== propValue // The 'value' in the DOM tree !== newValue
                         && (domNode['oninput-value']
                             ? domValue === domNode['oninput-value'] // If the last reported value to 'oninput' does not match domValue, do nothing and wait for oninput
@@ -406,7 +385,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                     }
                 }
                 else if (propValue !== previousValue) {
-                    var type = typeof propValue;
+                    let type = typeof propValue;
                     if (type === 'function') {
                         throw new Error('Functions may not be updated on subsequent renders (property: ' + propName +
                             '). Hint: declare event handler functions outside the render() function.');
@@ -433,10 +412,10 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         }
         return propertiesUpdated;
     };
-    var findIndexOfChild = function (children, sameAs, start) {
+    let findIndexOfChild = function (children, sameAs, start) {
         if (sameAs.vnodeSelector !== '') {
             // Never scan for text-nodes
-            for (var i = start; i < children.length; i++) {
+            for (let i = start; i < children.length; i++) {
                 if (same(children[i], sameAs)) {
                     return i;
                 }
@@ -444,9 +423,9 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         }
         return -1;
     };
-    var nodeAdded = function (vNode, transitions) {
+    let nodeAdded = function (vNode, transitions) {
         if (vNode.properties) {
-            var enterAnimation = vNode.properties.enterAnimation;
+            let enterAnimation = vNode.properties.enterAnimation;
             if (enterAnimation) {
                 if (typeof enterAnimation === 'function') {
                     enterAnimation(vNode.domNode, vNode.properties);
@@ -457,13 +436,13 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             }
         }
     };
-    var nodeToRemove = function (vNode, transitions) {
-        var domNode = vNode.domNode;
+    let nodeToRemove = function (vNode, transitions) {
+        let domNode = vNode.domNode;
         if (vNode.properties) {
-            var exitAnimation = vNode.properties.exitAnimation;
+            let exitAnimation = vNode.properties.exitAnimation;
             if (exitAnimation) {
                 domNode.style.pointerEvents = 'none';
-                var removeDomNode = function () {
+                let removeDomNode = function () {
                     if (domNode.parentNode) {
                         domNode.parentNode.removeChild(domNode);
                     }
@@ -482,17 +461,17 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             domNode.parentNode.removeChild(domNode);
         }
     };
-    var checkDistinguishable = function (childNodes, indexToCheck, parentVNode, operation) {
-        var childNode = childNodes[indexToCheck];
+    let checkDistinguishable = function (childNodes, indexToCheck, parentVNode, operation) {
+        let childNode = childNodes[indexToCheck];
         if (childNode.vnodeSelector === '') {
             return; // Text nodes need not be distinguishable
         }
-        var properties = childNode.properties;
-        var key = properties ? (properties.key === undefined ? properties.bind : properties.key) : undefined;
+        let properties = childNode.properties;
+        let key = properties ? (properties.key === undefined ? properties.bind : properties.key) : undefined;
         if (!key) {
-            for (var i = 0; i < childNodes.length; i++) {
+            for (let i = 0; i < childNodes.length; i++) {
                 if (i !== indexToCheck) {
-                    var node = childNodes[i];
+                    let node = childNodes[i];
                     if (same(node, childNode)) {
                         if (operation === 'added') {
                             throw new Error(parentVNode.vnodeSelector + ' had a ' + childNode.vnodeSelector + ' child ' +
@@ -507,30 +486,30 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             }
         }
     };
-    var createDom;
-    var updateDom;
-    var updateChildren = function (vnode, domNode, oldChildren, newChildren, projectionOptions) {
+    let createDom;
+    let updateDom;
+    let updateChildren = function (vnode, domNode, oldChildren, newChildren, projectionOptions) {
         if (oldChildren === newChildren) {
             return false;
         }
         oldChildren = oldChildren || emptyArray;
         newChildren = newChildren || emptyArray;
-        var oldChildrenLength = oldChildren.length;
-        var newChildrenLength = newChildren.length;
-        var transitions = projectionOptions.transitions;
-        var oldIndex = 0;
-        var newIndex = 0;
-        var i;
-        var textUpdated = false;
+        let oldChildrenLength = oldChildren.length;
+        let newChildrenLength = newChildren.length;
+        let transitions = projectionOptions.transitions;
+        let oldIndex = 0;
+        let newIndex = 0;
+        let i;
+        let textUpdated = false;
         while (newIndex < newChildrenLength) {
-            var oldChild = (oldIndex < oldChildrenLength) ? oldChildren[oldIndex] : undefined;
-            var newChild = newChildren[newIndex];
+            let oldChild = (oldIndex < oldChildrenLength) ? oldChildren[oldIndex] : undefined;
+            let newChild = newChildren[newIndex];
             if (oldChild !== undefined && same(oldChild, newChild)) {
                 textUpdated = updateDom(oldChild, newChild, projectionOptions) || textUpdated;
                 oldIndex++;
             }
             else {
-                var findOldIndex = findIndexOfChild(oldChildren, newChild, oldIndex + 1);
+                let findOldIndex = findIndexOfChild(oldChildren, newChild, oldIndex + 1);
                 if (findOldIndex >= 0) {
                     // Remove preceding missing children
                     for (i = oldIndex; i < findOldIndex; i++) {
@@ -558,15 +537,15 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         }
         return textUpdated;
     };
-    var addChildren = function (domNode, children, projectionOptions) {
+    let addChildren = function (domNode, children, projectionOptions) {
         if (!children) {
             return;
         }
-        for (var i = 0; i < children.length; i++) {
+        for (let i = 0; i < children.length; i++) {
             createDom(children[i], domNode, undefined, projectionOptions);
         }
     };
-    var initPropertiesAndChildren = function (domNode, vnode, projectionOptions) {
+    let initPropertiesAndChildren = function (domNode, vnode, projectionOptions) {
         addChildren(domNode, vnode.children, projectionOptions); // children before properties, needed for value property of <select>.
         if (vnode.text) {
             domNode.textContent = vnode.text;
@@ -577,8 +556,8 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         }
     };
     createDom = function (vnode, parentNode, insertBefore, projectionOptions) {
-        var domNode, i, c, start = 0, type, found;
-        var vnodeSelector = vnode.vnodeSelector;
+        let domNode, i, c, start = 0, type, found;
+        let vnodeSelector = vnode.vnodeSelector;
         if (vnodeSelector === '') {
             domNode = vnode.domNode = document.createTextNode(vnode.text);
             if (insertBefore !== undefined) {
@@ -628,15 +607,15 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         }
     };
     updateDom = function (previous, vnode, projectionOptions) {
-        var domNode = previous.domNode;
-        var textUpdated = false;
+        let domNode = previous.domNode;
+        let textUpdated = false;
         if (previous === vnode) {
             return false; // By contract, VNode objects may not be modified anymore after passing them to maquette
         }
-        var updated = false;
+        let updated = false;
         if (vnode.vnodeSelector === '') {
             if (vnode.text !== previous.text) {
-                var newVNode = document.createTextNode(vnode.text);
+                let newVNode = document.createTextNode(vnode.text);
                 domNode.parentNode.replaceChild(newVNode, domNode);
                 vnode.domNode = newVNode;
                 textUpdated = true;
@@ -668,7 +647,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         vnode.domNode = previous.domNode;
         return textUpdated;
     };
-    var createProjection = function (vnode, projectionOptions) {
+    let createProjection = function (vnode, projectionOptions) {
         return {
             update: function (updatedVnode) {
                 if (vnode.vnodeSelector !== updatedVnode.vnodeSelector) {
@@ -682,11 +661,11 @@ define("third-party/maquette", ["require", "exports"], function (require, export
     };
     // The other two parameters are not added here, because the Typescript compiler creates surrogate code for destructuring 'children'.
     exports.h = function (selector) {
-        var properties = arguments[1];
+        let properties = arguments[1];
         if (typeof selector !== 'string') {
             throw new Error();
         }
-        var childIndex = 1;
+        let childIndex = 1;
         if (properties && !properties.hasOwnProperty('vnodeSelector') && !Array.isArray(properties) && typeof properties === 'object') {
             childIndex = 2;
         }
@@ -694,12 +673,12 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             // Optional properties argument was omitted
             properties = undefined;
         }
-        var text;
-        var children;
-        var argsLength = arguments.length;
+        let text;
+        let children;
+        let argsLength = arguments.length;
         // Recognize a common special case where there is only a single text node
         if (argsLength === childIndex + 1) {
-            var onlyChild = arguments[childIndex];
+            let onlyChild = arguments[childIndex];
             if (typeof onlyChild === 'string') {
                 text = onlyChild;
             }
@@ -710,7 +689,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
         if (text === undefined) {
             children = [];
             for (; childIndex < argsLength; childIndex++) {
-                var child = arguments[childIndex];
+                let child = arguments[childIndex];
                 if (child === null || child === undefined) {
                 }
                 else if (Array.isArray(child)) {
@@ -818,9 +797,9 @@ define("third-party/maquette", ["require", "exports"], function (require, export
      *
      * @param <Result> The type of the value that is cached.
      */
-    exports.createCache = function () {
-        var cachedInputs;
-        var cachedOutcome;
+    exports.createCache = () => {
+        let cachedInputs;
+        let cachedOutcome;
         return {
             invalidate: function () {
                 cachedOutcome = undefined;
@@ -828,7 +807,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
             },
             result: function (inputs, calculation) {
                 if (cachedInputs) {
-                    for (var i = 0; i < inputs.length; i++) {
+                    for (let i = 0; i < inputs.length; i++) {
                         if (cachedInputs[i] !== inputs[i]) {
                             cachedOutcome = undefined;
                         }
@@ -853,27 +832,27 @@ define("third-party/maquette", ["require", "exports"], function (require, export
      *                       to the `callback` argument in `Array.map(callback)`.
      * @param updateResult   `function(source, target, index)` that updates a result to an updated source.
      */
-    exports.createMapping = function (getSourceKey, createResult, updateResult) {
-        var keys = [];
-        var results = [];
+    exports.createMapping = (getSourceKey, createResult, updateResult) => {
+        let keys = [];
+        let results = [];
         return {
             results: results,
             map: function (newSources) {
-                var newKeys = newSources.map(getSourceKey);
-                var oldTargets = results.slice();
-                var oldIndex = 0;
-                for (var i = 0; i < newSources.length; i++) {
-                    var source = newSources[i];
-                    var sourceKey = newKeys[i];
+                let newKeys = newSources.map(getSourceKey);
+                let oldTargets = results.slice();
+                let oldIndex = 0;
+                for (let i = 0; i < newSources.length; i++) {
+                    let source = newSources[i];
+                    let sourceKey = newKeys[i];
                     if (sourceKey === keys[oldIndex]) {
                         results[i] = oldTargets[oldIndex];
                         updateResult(source, oldTargets[oldIndex], i);
                         oldIndex++;
                     }
                     else {
-                        var found = false;
-                        for (var j = 1; j < keys.length + 1; j++) {
-                            var searchIndex = (oldIndex + j) % keys.length;
+                        let found = false;
+                        for (let j = 1; j < keys.length + 1; j++) {
+                            let searchIndex = (oldIndex + j) % keys.length;
                             if (keys[searchIndex] === sourceKey) {
                                 results[i] = oldTargets[searchIndex];
                                 updateResult(newSources[i], oldTargets[searchIndex], i);
@@ -900,8 +879,8 @@ define("third-party/maquette", ["require", "exports"], function (require, export
      * @param projectorOptions   Options that influence how the DOM is rendered and updated.
      */
     exports.createProjector = function (projectorOptions) {
-        var projector;
-        var projectionOptions = applyDefaultProjectionOptions(projectorOptions);
+        let projector;
+        let projectionOptions = applyDefaultProjectionOptions(projectorOptions);
         projectionOptions.eventHandlerInterceptor = function (propertyName, eventHandler, domNode, properties) {
             return function () {
                 // intercept function calls (event handlers) to do a render afterwards.
@@ -909,19 +888,19 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                 return eventHandler.apply(properties.bind || this, arguments);
             };
         };
-        var renderCompleted = true;
-        var scheduled;
-        var stopped = false;
-        var projections = [];
-        var renderFunctions = []; // matches the projections array
-        var doRender = function () {
+        let renderCompleted = true;
+        let scheduled;
+        let stopped = false;
+        let projections = [];
+        let renderFunctions = []; // matches the projections array
+        let doRender = function () {
             scheduled = undefined;
             if (!renderCompleted) {
                 return; // The last render threw an error, it should be logged in the browser console.
             }
             renderCompleted = false;
-            for (var i = 0; i < projections.length; i++) {
-                var updatedVnode = renderFunctions[i]();
+            for (let i = 0; i < projections.length; i++) {
+                let updatedVnode = renderFunctions[i]();
                 projections[i].update(updatedVnode);
             }
             renderCompleted = true;
@@ -962,7 +941,7 @@ define("third-party/maquette", ["require", "exports"], function (require, export
                 renderFunctions.push(renderMaquetteFunction);
             },
             detach: function (renderMaquetteFunction) {
-                for (var i = 0; i < renderFunctions.length; i++) {
+                for (let i = 0; i < renderFunctions.length; i++) {
                     if (renderFunctions[i] === renderMaquetteFunction) {
                         renderFunctions.splice(i, 1);
                         return projections.splice(i, 1)[0];
@@ -990,7 +969,7 @@ define("utils", ["require", "exports"], function (require, exports) {
     exports.satsub = satsub;
     function unwrapInt(func) {
         return function (ev) {
-            var target = ev.target;
+            let target = ev.target;
             if (!(target instanceof HTMLInputElement)) {
                 return;
             }
@@ -1002,8 +981,8 @@ define("utils", ["require", "exports"], function (require, exports) {
 define("depressing_state", ["require", "exports", "utils", "depressing_data"], function (require, exports, utils_1, depressing_data_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var DepressingState = /** @class */ (function () {
-        function DepressingState() {
+    class DepressingState {
+        constructor() {
             this.age = 18;
             this.sex = Math.random() > 0.5 ? 'male' : 'female';
             this.cash = 0;
@@ -1016,41 +995,38 @@ define("depressing_state", ["require", "exports", "utils", "depressing_data"], f
             this.logger = new DepressingLog();
             this.proposed = new ProposedState(this);
         }
-        return DepressingState;
-    }());
+    }
     exports.DepressingState = DepressingState;
-    var ProposedState = /** @class */ (function () {
-        function ProposedState(actualState) {
+    class ProposedState {
+        constructor(actualState) {
             this.reset(actualState);
         }
-        ProposedState.prototype.reset = function (actualState) {
+        reset(actualState) {
             this.cash = actualState.cash;
             this.debt = actualState.debt;
             this.pay_debt = Math.min(this.cash, 12);
             this.invest = Math.min(12, utils_1.satsub(this.cash, this.pay_debt));
-        };
-        return ProposedState;
-    }());
+        }
+    }
     exports.ProposedState = ProposedState;
-    var DepressingLog = /** @class */ (function () {
-        function DepressingLog() {
+    class DepressingLog {
+        constructor() {
             this._log = [];
         }
-        DepressingLog.prototype.record = function (age, message) {
-            this._log.unshift({ m: message, id: Math.random(), age: age });
-        };
-        DepressingLog.prototype.allLogs = function () {
+        record(age, message) {
+            this._log.unshift({ m: message, id: Math.random(), age });
+        }
+        allLogs() {
             return this._log;
-        };
-        return DepressingLog;
-    }());
+        }
+    }
     exports.DepressingLog = DepressingLog;
 });
 define("new_hotness", ["require", "exports", "depressing_state", "utils", "depressing_data"], function (require, exports, depressing_state_1, utils_2, depressing_data_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Person = /** @class */ (function () {
-        function Person(name) {
+    class Person {
+        constructor(name) {
             this.cash = new CashAccount();
             this.investments = [];
             this.debts = [];
@@ -1063,85 +1039,123 @@ define("new_hotness", ["require", "exports", "depressing_state", "utils", "depre
             this.name = name;
             this.logger = new depressing_state_1.DepressingLog();
         }
-        Person.prototype.log = function (message) {
+        log(message) {
             this.logger.record(this.age, message);
-        };
-        return Person;
-    }());
+        }
+    }
     exports.Person = Person;
-    var Account = /** @class */ (function () {
-        function Account(opts) {
+    class Account {
+        constructor(opts) {
             this.name = opts.name;
             this._balance = opts.startingBalance || 0;
             this.minBalance = opts.minBalance || 0;
             this.maxBalance = opts.maxBalance || Infinity;
             this.interestRate = opts.interestRate || 0;
+            this.parent = null;
         }
-        Object.defineProperty(Account.prototype, "balance", {
-            get: function () {
-                return this._balance;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Account;
-    }());
+        get balance() {
+            return this._balance;
+        }
+        makeProposal() {
+            // Escape from type safety
+            let proposed = new (this.constructor(this));
+            proposed.parent = this;
+            return proposed;
+        }
+    }
     exports.Account = Account;
-    var CashAccount = /** @class */ (function (_super) {
-        __extends(CashAccount, _super);
-        function CashAccount() {
-            return _super.call(this, { name: 'cash' }) || this;
+    class CashAccount extends Account {
+        constructor() {
+            super({ name: 'cash' });
         }
-        return CashAccount;
-    }(Account));
+    }
     exports.CashAccount = CashAccount;
-    var CreditAccount = /** @class */ (function (_super) {
-        __extends(CreditAccount, _super);
-        function CreditAccount(opts) {
-            return _super.call(this, __assign({ maxBalance: 0 }, opts)) || this;
+    class CreditAccount extends Account {
+        constructor({ name, minBalance, interestRate, canIncrease }) {
+            super({ maxBalance: 0, name, minBalance, interestRate });
+            this.canIncrease = canIncrease;
         }
-        return CreditAccount;
-    }(Account));
+        availableDebt() {
+            if (!this.canIncrease) {
+                return 0;
+            }
+            else {
+                return this.balance - this.minBalance;
+            }
+        }
+    }
     exports.CreditAccount = CreditAccount;
-    var InvestmentAccount = /** @class */ (function (_super) {
-        __extends(InvestmentAccount, _super);
-        function InvestmentAccount(opts) {
-            return _super.call(this, opts) || this;
+    class InvestmentAccount extends Account {
+        constructor(opts) {
+            super(opts);
         }
-        return InvestmentAccount;
-    }(Account));
+    }
     exports.InvestmentAccount = InvestmentAccount;
-    var Job = /** @class */ (function () {
-        function Job(worker, salary) {
+    class Job {
+        constructor(worker, salary) {
             this.salary = salary;
             this.worker = worker;
             this.jobStability = 0.90;
         }
-        Job.prototype.salaryReview = function () {
+        salaryReview() {
             if (Math.random() > this.jobStability) {
-                var lossPercent = 1 - Math.random() * 0.04;
+                let lossPercent = 1 - Math.random() * 0.04;
                 this.salary = Math.round(this.salary * lossPercent);
-                this.worker.log("You were fired and got a new job at a lower salary: $" + utils_2.commas(this.salary));
+                this.worker.log(`You were fired and got a new job at a lower salary: $${utils_2.commas(this.salary)}`);
             }
             else {
-                var raisePercent = 1 + Math.random() * 0.14;
+                let raisePercent = 1 + Math.random() * 0.14;
                 this.salary = Math.round(this.salary * raisePercent);
-                this.worker.log("You received a large raise to: $" + utils_2.commas(this.salary));
+                this.worker.log(`You received a large raise to: $${utils_2.commas(this.salary)}`);
             }
-        };
-        return Job;
-    }());
+        }
+    }
     exports.Job = Job;
+    class Item {
+    }
+    exports.Item = Item;
+    class SpendingProposal {
+        constructor(person) {
+            this.purchases = [];
+            this.cash = person.cash.makeProposal();
+            this.investments = person.investments.map(i => i.makeProposal());
+            this.debts = person.debts.map(d => d.makeProposal());
+            this.startingTotal = this.proposalSum();
+        }
+        currentDebt() {
+            return this.debts.reduce((total, d) => total + d.balance, 0);
+        }
+        availableDebt() {
+            return this.debts.reduce((total, d) => total + d.availableDebt(), 0);
+        }
+        totalInvestments() {
+            return this.investments.reduce((total, i) => total + i.balance, 0);
+        }
+        purchasesPrice() {
+            return -this.purchases.reduce((total, i) => total + i.price, 0);
+        }
+        proposalSum() {
+            return this.availableDebt() +
+                this.currentDebt() +
+                this.cash.balance +
+                this.totalInvestments() +
+                this.purchasesPrice();
+        }
+        sanityCheck() {
+            this.proposalSum() === this.startingTotal;
+        }
+    }
+    exports.SpendingProposal = SpendingProposal;
 });
 define("depressing_logic", ["require", "exports", "utils", "depressing_data", "new_hotness"], function (require, exports, utils_3, depressing_data_3, new_hotness_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var GameLogic = /** @class */ (function () {
-        function GameLogic(state) {
+    class GameLogic {
+        constructor(state) {
             this.state = state;
             this.person_deleteme = new new_hotness_1.Person('Johnny');
         }
-        GameLogic.prototype.broadcast = function (sa) {
+        broadcast(sa) {
             switch (sa.kind) {
                 case 'advance_year':
                     this.advanceYear();
@@ -1156,11 +1170,11 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data", "n
                     this.log(sa.message);
                     break;
             }
-        };
-        GameLogic.prototype.broadcaster = function () {
+        }
+        broadcaster() {
             return this.broadcast.bind(this);
-        };
-        GameLogic.prototype.advanceYear = function () {
+        }
+        advanceYear() {
             this.state.age += 1;
             this.doInvestment();
             this.doDebt();
@@ -1170,143 +1184,124 @@ define("depressing_logic", ["require", "exports", "utils", "depressing_data", "n
             this.updateExpenses();
             this.state.proposed.reset(this.state);
             this.decideIfDead();
-        };
-        GameLogic.prototype.doInvestment = function () {
+        }
+        doInvestment() {
             if (this.state.proposed.invest > 0) {
                 this.state.cash -= this.state.proposed.invest;
                 this.state.invested += this.state.proposed.invest;
             }
-        };
-        GameLogic.prototype.doDebt = function () {
+        }
+        doDebt() {
             if (this.state.proposed.pay_debt > 0) {
                 this.state.cash -= this.state.proposed.pay_debt;
                 this.state.debt += this.state.proposed.pay_debt;
             }
             this.state.debt = Math.round(this.state.debt * 1.04);
-        };
-        GameLogic.prototype.updateCash = function () {
+        }
+        updateCash() {
             this.state.cash += this.state.salary + this.state.capital_gains;
             if (this.state.expenses > this.state.cash) {
-                var shortfall = this.state.expenses - this.state.cash;
+                let shortfall = this.state.expenses - this.state.cash;
                 this.state.cash = 0;
                 if (shortfall > this.state.invested) {
-                    var debt = shortfall - this.state.invested;
+                    let debt = shortfall - this.state.invested;
                     if (this.state.invested > 0) {
-                        this.log("Had to go into debt -$" + utils_3.commas(debt) + ". Savings wiped out.");
+                        this.log(`Had to go into debt -$${utils_3.commas(debt)}. Savings wiped out.`);
                         this.state.invested = 0;
                     }
                     else {
-                        this.log("Had to go into debt -$" + utils_3.commas(debt) + ".");
+                        this.log(`Had to go into debt -$${utils_3.commas(debt)}.`);
                     }
                     this.state.debt -= debt;
                 }
                 else {
-                    this.log("Not enough cash for expenses. Eating into investment principle $" + utils_3.commas(shortfall) + ".");
+                    this.log(`Not enough cash for expenses. Eating into investment principle $${utils_3.commas(shortfall)}.`);
                     this.state.invested -= shortfall;
                 }
             }
             else {
                 this.state.cash -= this.state.expenses;
             }
-        };
-        GameLogic.prototype.updateSalary = function () {
-            var raisePercent = 1 + Math.random() * 0.16 - 0.04;
+        }
+        updateSalary() {
+            let raisePercent = 1 + Math.random() * 0.16 - 0.04;
             this.state.salary = Math.round(this.state.salary * raisePercent);
             if (raisePercent > 1.09) {
-                this.log("You received a large raise to: $" + utils_3.commas(this.state.salary));
+                this.log(`You received a large raise to: $${utils_3.commas(this.state.salary)}`);
             }
             else if (raisePercent < 1) {
-                this.log("You were fired and got a new job at a lower salary: $" + utils_3.commas(this.state.salary));
+                this.log(`You were fired and got a new job at a lower salary: $${utils_3.commas(this.state.salary)}`);
             }
-        };
-        GameLogic.prototype.updateCapitalGains = function () {
+        }
+        updateCapitalGains() {
             this.state.capital_gains = Math.round(this.state.invested * 0.05);
-        };
-        GameLogic.prototype.updateExpenses = function () {
+        }
+        updateExpenses() {
             this.state.expenses = Math.round(this.state.expenses * (1 + depressing_data_3.VERY_DEPRESSING_DATA.inflation));
-        };
-        GameLogic.prototype.decideIfDead = function () {
+        }
+        decideIfDead() {
             if (Math.random() <=
                 depressing_data_3.VERY_DEPRESSING_DATA.death_rates[this.state.age][this.state.sex]) {
                 this.state.dead = true;
             }
-        };
-        GameLogic.prototype.log = function (message) {
+        }
+        log(message) {
             this.state.logger.record(this.state.age, message);
-        };
-        GameLogic.prototype.updateInvest = function (investAmount) {
+        }
+        updateInvest(investAmount) {
             this.state.proposed.invest = investAmount;
-            var ready_cash = this.state.proposed.cash - this.state.proposed.pay_debt;
+            let ready_cash = this.state.proposed.cash - this.state.proposed.pay_debt;
             if (investAmount > ready_cash) {
                 this.state.proposed.pay_debt += ready_cash - investAmount;
             }
-        };
-        GameLogic.prototype.updatePayDebt = function (debtAmount) {
+        }
+        updatePayDebt(debtAmount) {
             this.state.proposed.pay_debt = debtAmount;
-            var ready_cash = this.state.proposed.cash - this.state.proposed.invest;
+            let ready_cash = this.state.proposed.cash - this.state.proposed.invest;
             if (debtAmount > ready_cash) {
                 this.state.proposed.invest += ready_cash - debtAmount;
             }
-        };
-        return GameLogic;
-    }());
+        }
+    }
     exports.GameLogic = GameLogic;
 });
 define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"], function (require, exports, maquette_1, utils_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Component = /** @class */ (function () {
-        function Component(state, broadcast) {
+    class Component {
+        constructor(state, broadcast) {
             this.state = state;
             this.broadcast = broadcast;
             this.uistate = this.initUIState();
         }
-        return Component;
-    }());
+    }
     exports.Component = Component;
-    var SimpleComponent = /** @class */ (function (_super) {
-        __extends(SimpleComponent, _super);
-        function SimpleComponent() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        SimpleComponent.prototype.initUIState = function () { return null; };
-        return SimpleComponent;
-    }(Component));
+    class SimpleComponent extends Component {
+        initUIState() { return null; }
+    }
     exports.SimpleComponent = SimpleComponent;
-    var ConstComponent = /** @class */ (function (_super) {
-        __extends(ConstComponent, _super);
-        function ConstComponent() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return ConstComponent;
-    }(SimpleComponent));
+    class ConstComponent extends SimpleComponent {
+    }
     exports.ConstComponent = ConstComponent;
-    var FullGameComponent = /** @class */ (function (_super) {
-        __extends(FullGameComponent, _super);
-        function FullGameComponent(state, broadcast) {
-            var _this = _super.call(this, state, broadcast) || this;
-            _this.outputList = new OutputListComponent(_this.state, broadcast);
-            _this.inputForm = new InputFormComponent(_this.state, broadcast);
-            _this.log = new LogComponent(_this.state, broadcast);
-            return _this;
+    class FullGameComponent extends SimpleComponent {
+        constructor(state, broadcast) {
+            super(state, broadcast);
+            this.outputList = new OutputListComponent(this.state, broadcast);
+            this.inputForm = new InputFormComponent(this.state, broadcast);
+            this.log = new LogComponent(this.state, broadcast);
         }
-        FullGameComponent.prototype.render = function () {
+        render() {
             return maquette_1.h('div.tile.is-ancestor', { key: this }, [
                 // The "is-X" classes have to sum to 12
                 maquette_1.h('div.tile.is-parent.is-3', maquette_1.h('div.tile.is-child.box', this.outputList.render())),
                 maquette_1.h('div.tile.is-parent.is-3', maquette_1.h('div.tile.is-child.box', this.inputForm.render())),
                 maquette_1.h('div.tile.is-parent.is-6', maquette_1.h('div.tile.is-child.box', this.log.render())),
             ]);
-        };
-        return FullGameComponent;
-    }(SimpleComponent));
-    exports.FullGameComponent = FullGameComponent;
-    var OutputListComponent = /** @class */ (function (_super) {
-        __extends(OutputListComponent, _super);
-        function OutputListComponent() {
-            return _super !== null && _super.apply(this, arguments) || this;
         }
-        OutputListComponent.prototype.render = function () {
+    }
+    exports.FullGameComponent = FullGameComponent;
+    class OutputListComponent extends SimpleComponent {
+        render() {
             return maquette_1.h('ul.displays', { key: this }, [
                 this.sex(),
                 this.age(),
@@ -1317,140 +1312,127 @@ define("depressing_ui", ["require", "exports", "third-party/maquette", "utils"],
                 this.investments(),
                 this.debt(),
             ]);
-        };
-        OutputListComponent.prototype.sex = function () { return this.makeli('Sex', this.state.sex); };
-        OutputListComponent.prototype.age = function () { return this.makeli('Age', this.state.age); };
-        OutputListComponent.prototype.cash = function () { return this.makeli$('Cash', this.state.cash); };
-        OutputListComponent.prototype.expenses = function () { return this.makeli$('Expenses', this.state.expenses); };
-        OutputListComponent.prototype.salary = function () { return this.makeli$('Salary', this.state.salary); };
-        OutputListComponent.prototype.capitalGains = function () {
+        }
+        sex() { return this.makeli('Sex', this.state.sex); }
+        age() { return this.makeli('Age', this.state.age); }
+        cash() { return this.makeli$('Cash', this.state.cash); }
+        expenses() { return this.makeli$('Expenses', this.state.expenses); }
+        salary() { return this.makeli$('Salary', this.state.salary); }
+        capitalGains() {
             if (this.state.capital_gains <= 0) {
                 return;
             }
             return this.makeli$('Capital gains', this.state.capital_gains);
-        };
-        OutputListComponent.prototype.investments = function () {
+        }
+        investments() {
             if (this.state.invested <= 0) {
                 return;
             }
             return this.makeli$('Investments', this.state.invested);
-        };
-        OutputListComponent.prototype.debt = function () {
+        }
+        debt() {
             if (this.state.debt >= 0) {
                 return;
             }
             return this.makeli$('Debt', this.state.debt);
-        };
-        OutputListComponent.prototype.makeli$ = function (title, value) {
-            return maquette_1.h('li', { key: title }, [title + ": $" + utils_4.commas(value)]);
-        };
-        OutputListComponent.prototype.makeli = function (title, value) {
-            return maquette_1.h('li', { key: title }, [title + ": " + utils_4.commas(value)]);
-        };
-        return OutputListComponent;
-    }(SimpleComponent));
+        }
+        makeli$(title, value) {
+            return maquette_1.h('li', { key: title }, [`${title}: $${utils_4.commas(value)}`]);
+        }
+        makeli(title, value) {
+            return maquette_1.h('li', { key: title }, [`${title}: ${utils_4.commas(value)}`]);
+        }
+    }
     exports.OutputListComponent = OutputListComponent;
-    var InputFormComponent = /** @class */ (function (_super) {
-        __extends(InputFormComponent, _super);
-        function InputFormComponent(state, broadcast) {
-            var _this = _super.call(this, state, broadcast) || this;
-            _this.investForm = new InvestFormComponent(_this.state, broadcast);
-            _this.buttonClick = function () {
+    class InputFormComponent extends SimpleComponent {
+        constructor(state, broadcast) {
+            super(state, broadcast);
+            this.investForm = new InvestFormComponent(this.state, broadcast);
+            this.buttonClick = () => {
                 broadcast({ kind: 'advance_year' });
             };
-            return _this;
             //this.buttonClick = () => this.state.doRound()
         }
-        InputFormComponent.prototype.render = function () {
+        render() {
             if (this.state.dead) {
                 return maquette_1.h('p', maquette_1.h('b', 'You died.'));
             }
             else {
                 return maquette_1.h('p', maquette_1.h('a.button.is-danger', { onclick: this.buttonClick }, 'Play the game'), this.investForm.render());
             }
-        };
-        return InputFormComponent;
-    }(SimpleComponent));
-    exports.InputFormComponent = InputFormComponent;
-    var InvestFormComponent = /** @class */ (function (_super) {
-        __extends(InvestFormComponent, _super);
-        function InvestFormComponent(state, broadcast) {
-            var _this = _super.call(this, state, broadcast) || this;
-            _this.investUpdate = utils_4.unwrapInt(function (investAmount) { return broadcast({
-                kind: 'propose_investment',
-                investAmount: investAmount,
-            }); });
-            _this.debtUpdate = utils_4.unwrapInt(function (debtAmount) { return broadcast({
-                kind: 'propose_debt_payment',
-                debtAmount: debtAmount
-            }); });
-            return _this;
         }
-        InvestFormComponent.prototype.render = function () {
+    }
+    exports.InputFormComponent = InputFormComponent;
+    class InvestFormComponent extends SimpleComponent {
+        constructor(state, broadcast) {
+            super(state, broadcast);
+            this.investUpdate = utils_4.unwrapInt(investAmount => broadcast({
+                kind: 'propose_investment',
+                investAmount,
+            }));
+            this.debtUpdate = utils_4.unwrapInt(debtAmount => broadcast({
+                kind: 'propose_debt_payment',
+                debtAmount
+            }));
+        }
+        render() {
             return maquette_1.h('form', maquette_1.h('div.form-group', this.investSlider(), this.debtSlider()));
-        };
-        InvestFormComponent.prototype.investSlider = function () {
+        }
+        investSlider() {
             if (this.state.cash <= 0) {
                 return;
             }
-            return maquette_1.h('div.field', maquette_1.h('label', { key: 'label-invest' }, "Invest $" + utils_4.commas(this.state.proposed.invest), this.rangeSlider(this.state.proposed, 'invest', this.investUpdate, this.state.cash)));
-        };
-        InvestFormComponent.prototype.debtSlider = function () {
+            return maquette_1.h('div.field', maquette_1.h('label', { key: 'label-invest' }, `Invest $${utils_4.commas(this.state.proposed.invest)}`, this.rangeSlider(this.state.proposed, 'invest', this.investUpdate, this.state.cash)));
+        }
+        debtSlider() {
             if (this.state.cash <= 0 || this.state.debt >= 0) {
                 return;
             }
-            return maquette_1.h('label', { key: 'label-pay-debt' }, "Pay debt $" + utils_4.commas(this.state.proposed.pay_debt), this.rangeSlider(this.state.proposed, 'pay_debt', this.debtUpdate, Math.min(-this.state.debt, this.state.cash)));
-        };
-        InvestFormComponent.prototype.rangeSlider = function (state, prop, updateFunc, max) {
+            return maquette_1.h('label', { key: 'label-pay-debt' }, `Pay debt $${utils_4.commas(this.state.proposed.pay_debt)}`, this.rangeSlider(this.state.proposed, 'pay_debt', this.debtUpdate, Math.min(-this.state.debt, this.state.cash)));
+        }
+        rangeSlider(state, prop, updateFunc, max) {
             return maquette_1.h('div.control', maquette_1.h('input.slider', {
                 type: 'range',
                 min: 0,
-                max: max,
+                max,
                 step: 1,
                 key: prop,
                 value: state[prop].toString(),
                 oninput: updateFunc,
             }));
-        };
-        return InvestFormComponent;
-    }(SimpleComponent));
-    exports.InvestFormComponent = InvestFormComponent;
-    var LogComponent = /** @class */ (function (_super) {
-        __extends(LogComponent, _super);
-        function LogComponent() {
-            return _super !== null && _super.apply(this, arguments) || this;
         }
-        LogComponent.prototype.render = function () {
+    }
+    exports.InvestFormComponent = InvestFormComponent;
+    class LogComponent extends SimpleComponent {
+        render() {
             return maquette_1.h('div.eventlog', this.state.logger.allLogs()
-                .map(function (msg) { return maquette_1.h('p', { key: msg.id }, maquette_1.h('b', "Age " + msg.age + " "), msg.m); }));
-        };
-        return LogComponent;
-    }(SimpleComponent));
+                .map(msg => maquette_1.h('p', { key: msg.id }, maquette_1.h('b', `Age ${msg.age} `), msg.m)));
+        }
+    }
     exports.LogComponent = LogComponent;
 });
 define("depressing_game", ["require", "exports", "depressing_data", "depressing_ui", "depressing_state", "depressing_logic", "third-party/maquette"], function (require, exports, depressing_data_4, depressing_ui_1, depressing_state_2, depressing_logic_1, maquette_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var DepressingGame = /** @class */ (function () {
-        function DepressingGame() {
+    class DepressingGame {
+        constructor() {
             this.data = depressing_data_4.VERY_DEPRESSING_DATA;
             this.state = new depressing_state_2.DepressingState();
             this.gameLogic = new depressing_logic_1.GameLogic(this.state);
             this.broadcaster = this.gameLogic.broadcaster();
             this.fullGame = new depressing_ui_1.FullGameComponent(this.state, this.broadcaster);
         }
-        DepressingGame.prototype.render = function () {
+        render() {
             return this.fullGame.render();
-        };
-        return DepressingGame;
-    }());
+        }
+    }
     // Initialize
     function initialize() {
-        var projector = maquette_2.createProjector();
-        var rootElem = document.getElementById('game');
-        var depressingGame = new DepressingGame();
+        let projector = maquette_2.createProjector();
+        let rootElem = document.getElementById('game');
+        let depressingGame = new DepressingGame();
         if (rootElem !== null) {
-            projector.append(rootElem, function () { return depressingGame.render(); });
+            projector.append(rootElem, () => depressingGame.render());
         }
         window.game = depressingGame;
     }
