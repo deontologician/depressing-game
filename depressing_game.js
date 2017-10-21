@@ -1049,17 +1049,62 @@ define("new_hotness", ["require", "exports", "depressing_state", "utils", "depre
             this.name = opts.name;
             this._balance = opts.startingBalance || 0;
             this.minBalance = opts.minBalance || 0;
-            this.maxBalance = opts.maxBalance || Infinity;
+            this._maxBalance = opts.maxBalance || Infinity;
             this.interestRate = opts.interestRate || 0;
-            this.parent = null;
+            this.proposalFor = null;
         }
         get balance() {
             return this._balance;
         }
+        get maxBalance() {
+            return this._maxBalance;
+        }
+        set maxBalance(val) {
+            if (this.proposalFor === null) {
+                throw new Error(`Can't change maxBalance on a real account`);
+            }
+            this._maxBalance = val;
+        }
+        static transfer(amount, { source, target }) {
+            if (Math.round(amount) !== amount) {
+                throw new Error(`Amount to be transfered must be an integer. \
+                       Got $${amount}`);
+            }
+            source.validateWithdrawal(amount);
+            target.validateDeposit(amount);
+            source.withdraw(amount);
+            target.deposit(amount);
+        }
+        validateDeposit(amount) {
+            if (amount < 0) {
+                throw new Error(`Can't deposit a negative amount to an account`);
+            }
+            if (this.balance + amount > this.maxBalance) {
+                throw new Error(`Can't deposit $${amount} to ${this.name}, it goes over the \
+         max balance of $${this.maxBalance}`);
+            }
+        }
+        validateWithdrawal(amount) {
+            if (amount < 0) {
+                throw new Error(`Can't withdraw a negative amount from an account`);
+            }
+            if (this.balance - amount < this.minBalance) {
+                throw new Error(`Can't withdraw $${amount} from ${this.name}, it drops below the \
+         minimum balance of $${this.minBalance}`);
+            }
+        }
+        deposit(amount) {
+            this.validateDeposit(amount);
+            this._balance += amount;
+        }
+        withdraw(amount) {
+            this.validateWithdrawal(amount);
+            this._balance -= amount;
+        }
         makeProposal() {
             // Escape from type safety
             let proposed = new (this.constructor(this));
-            proposed.parent = this;
+            proposed.proposalFor = this;
             return proposed;
         }
     }
@@ -1071,16 +1116,25 @@ define("new_hotness", ["require", "exports", "depressing_state", "utils", "depre
     }
     exports.CashAccount = CashAccount;
     class CreditAccount extends Account {
-        constructor({ name, minBalance, interestRate, canIncrease }) {
+        constructor({ name, minBalance, interestRate, canDecrease }) {
             super({ maxBalance: 0, name, minBalance, interestRate });
-            this.canIncrease = canIncrease;
+            this.canDecrease = canDecrease;
         }
-        availableDebt() {
-            if (!this.canIncrease) {
+        availableCredit() {
+            if (!this.canDecrease) {
                 return 0;
             }
             else {
                 return this.balance - this.minBalance;
+            }
+        }
+        payoffAmount() {
+            return this.maxBalance - this.balance;
+        }
+        validateWithdrawal(amount) {
+            super.validateWithdrawal(amount);
+            if (!this.canDecrease) {
+                throw new Error(`Can't withdraw from credit account ${this.name}`);
             }
         }
     }
@@ -1125,8 +1179,8 @@ define("new_hotness", ["require", "exports", "depressing_state", "utils", "depre
         currentDebt() {
             return this.debts.reduce((total, d) => total + d.balance, 0);
         }
-        availableDebt() {
-            return this.debts.reduce((total, d) => total + d.availableDebt(), 0);
+        availableCredit() {
+            return this.debts.reduce((total, d) => total + d.availableCredit(), 0);
         }
         totalInvestments() {
             return this.investments.reduce((total, i) => total + i.balance, 0);
@@ -1135,7 +1189,7 @@ define("new_hotness", ["require", "exports", "depressing_state", "utils", "depre
             return -this.purchases.reduce((total, i) => total + i.price, 0);
         }
         proposalSum() {
-            return this.availableDebt() +
+            return this.availableCredit() +
                 this.currentDebt() +
                 this.cash.balance +
                 this.totalInvestments() +
@@ -1143,6 +1197,76 @@ define("new_hotness", ["require", "exports", "depressing_state", "utils", "depre
         }
         sanityCheck() {
             this.proposalSum() === this.startingTotal;
+        }
+        getDebtByName(name) {
+            let results = this.debts.filter(d => d.name === name);
+            if (results.length === 0) {
+                throw new Error(`Didn't find debt named ${name}`);
+            }
+            return results[0];
+        }
+        getInvestmentByName(name) {
+            let results = this.investments.filter(i => i.name === name);
+            if (results.length === 0) {
+                throw new Error(`Didn't find investment named ${name}`);
+            }
+            return results[0];
+        }
+        setDebt(name, newBalance) {
+            const debt = this.getDebtByName(name);
+            if (newBalance < debt.balance) {
+                // How much do we want to take out?
+                const wantToTakeOut = debt.balance - newBalance;
+                // But how much are we actually allowed to take out?
+                const canTakeOut = debt.availableCredit();
+                // We're only taking out what's available or if we want less
+                // than that, the entire amount we want
+                const goingToTakeOut = Math.min(canTakeOut, wantToTakeOut);
+                // If we can't take anything out, we're done
+                if (canTakeOut > 0) {
+                    Account.transfer(goingToTakeOut, { source: debt, target: this.cash });
+                }
+            }
+            else {
+                // How much are we trying to pay?
+                const wantToPay = newBalance - debt.balance;
+                // How much do we need to pay?
+                const needToPay = debt.payoffAmount();
+                // But how much can we actually pay?
+                const canPay = this.cash.balance;
+                // Only the lesser of what we want to and need to
+                const goingToPay = Math.min(needToPay, wantToPay, canPay);
+                // Only pay if we need to
+                if (needToPay > 0) {
+                    Account.transfer(goingToPay, { source: this.cash, target: debt });
+                }
+            }
+        }
+        setInvestment(name, newBalance) {
+            const inv = this.getInvestmentByName(name);
+            if (newBalance > inv.balance) {
+                const desiredDeposit = newBalance - inv.balance;
+                const goingToDeposit = Math.min(this.cash.balance, desiredDeposit);
+                if (goingToDeposit > 0) {
+                    Account.transfer(goingToDeposit, { source: this.cash, target: inv });
+                }
+            }
+            else {
+                const desiredWithdrawal = inv.balance - newBalance;
+                // Can't withdraw more than we have
+                const goingToWithdraw = Math.min(inv.balance, desiredWithdrawal);
+                if (goingToWithdraw > 0) {
+                    Account.transfer(goingToWithdraw, { source: inv, target: this.cash });
+                }
+            }
+        }
+        setMaxAccountBalances() {
+            // Find the sum of all available credit and our cash amount and
+            // add it to the balance of all accounts with a maxBalance of
+            // Infinity, to make an "effective max" account balance for the
+            // proposed accounts.
+            const creditAvailable = this.availableCredit();
+            const cashAvailable = this.cash.balance;
         }
     }
     exports.SpendingProposal = SpendingProposal;

@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "module": "amd",
+    "module": "ES6",
     "moduleResolution": "Node",
     "target": "es6",
     "sourceMap": false,
-    "outFile": "depressing_game.js",
+    "outDir": "build",
 
     "strict": true,
     "noImplicitAny": true,
@@ -14,15 +14,10 @@
     "noUnusedLocals": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
-
   },
 
   "files": [
     "depressing_game.ts",
-    "third-party/maquette.ts"
+    "third-party/maquette.ts",
   ],
-
-  "scripts": {
-    "lint": "tslint *.ts"
-  }
 }
