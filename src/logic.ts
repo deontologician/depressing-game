@@ -1,22 +1,9 @@
 // This file is intending to restructure depressing_data so that it is
 // more generalizable to more account types and more people.
-import { DepressingLog } from './depressing_state'
 import { commas } from './utils'
-import { VERY_DEPRESSING_DATA } from './depressing_data'
-import { rootElem } from './new_hotness_ui'
-import { VNode } from './third-party/maquette'
+import { VERY_DEPRESSING_DATA } from './data'
 
-export class Game {
-  private person: Person
-
-  constructor() {
-    this.person = new Person('Jim')
-  }
-
-  render(): VNode {
-    rootElem(this.person)
-  }
-}
+export type Logger = Array<{age: number, msg: string, id: number}>
 
 export class Person {
   public readonly name: string
@@ -32,15 +19,14 @@ export class Person {
   public hedons: number = 0
   public dolors: number = 0
 
-  private logger: DepressingLog = new DepressingLog()
+  private logger: Logger = []
 
   constructor(name: string) {
     this.name = name
-    this.logger = new DepressingLog()
   }
 
   log(message: string) {
-    this.logger.record(this.age, message)
+    this.logger.push({age: this.age, id: Math.random(), msg: message})
   }
 
   addInvestmentAccount(acct: InvestmentAccount) {
@@ -325,10 +311,6 @@ export class SpendingProposal {
         Account.transfer(goingToWithdraw, {source: inv, target: this.cash})
       }
     }
-  }
-
-  public dummyFunc() {
-    xs
   }
 
   // private setMaxAccountBalances() {

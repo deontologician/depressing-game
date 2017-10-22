@@ -99,14 +99,12 @@ export class InputFormComponent extends SimpleComponent<DepressingState> {
   investForm: InvestFormComponent
   buttonClick: () => void
 
-
   constructor(state: DepressingState, broadcast: Broadcaster) {
     super(state, broadcast)
     this.investForm = new InvestFormComponent(this.state, broadcast)
     this.buttonClick = () => {
       broadcast({kind: 'advance_year'})
     }
-    //this.buttonClick = () => this.state.doRound()
   }
   render(): VNode {
     if (this.state.dead) {

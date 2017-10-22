@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "module": "ES6",
+    "module": "es6",
     "moduleResolution": "Node",
-    "target": "es6",
+    "target": "es5",
     "sourceMap": false,
-    "outDir": "build",
+    "outDir": "./dist/",
 
     "strict": true,
     "noImplicitAny": true,

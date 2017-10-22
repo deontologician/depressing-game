@@ -5,8 +5,6 @@ import { GameLogic, Broadcaster } from './depressing_logic'
 
 import { createProjector } from './third-party/maquette'
 
-import { Game } from './new_hotness'
-
 declare global {
   interface Window { game: DepressingGame; }
 }
@@ -38,13 +36,6 @@ export function initialize() {
   let depressingGame = new DepressingGame()
   if (rootElem !== null) {
     projector.append(rootElem, () => depressingGame.render())
-  }
-
-  let newProjector = createProjector()
-  let newRootElem = document.getElementById('new-game')
-  let newGame = new Game()
-  if (newRootElem !== null) {
-    newProjector.append(newRootElem, () => newGame.render())
   }
   window.game = depressingGame
 }
