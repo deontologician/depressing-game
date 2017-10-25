@@ -20,7 +20,9 @@
   },
   "dependencies": {
     "@cycle/dom": "^19.0.0",
+    "@cycle/isolate": "^3.1.0",
     "@cycle/run": "^3.3.0",
+    "immutable": "^3.8.2",
     "xstream": "^11.0.0"
   },
   "scripts": {

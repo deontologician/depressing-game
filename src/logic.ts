@@ -2,41 +2,90 @@
 // more generalizable to more account types and more people.
 import { commas } from './utils'
 import { VERY_DEPRESSING_DATA } from './data'
+import { List } from 'immutable'
 
-export type Logger = Array<{age: number, msg: string, id: number}>
+export type EventRecord = {age: number, msg: string, id: number}
+export type Events = List<LogRecord>
 
-export class Person {
-  public readonly name: string
-  public readonly sex: 'male' | 'female'
+export type GameState = {
+  readonly person: Person
+}
 
-  public cash: Account = new CashAccount()
-  public investments: Array<InvestmentAccount> = []
-  public debts: Array<CreditAccount> = []
-  public dead: boolean = false
-  public age: number = 18
-  public job: Job = new Job(this, VERY_DEPRESSING_DATA.cost_of_living)
+export type Person = {
+  readonly name: string
+  readonly sex: 'male' | 'female'
 
-  public hedons: number = 0
-  public dolors: number = 0
+  readonly dead: boolean
+  readonly age: number
+  readonly happiness: number
+  readonly suffering: number
+  readonly job: Job
 
-  private logger: Logger = []
+  readonly cash: Account
+  readonly investments: InvestmentAccounts
+  readonly debts: CreditAccounts
 
-  constructor(name: string) {
-    this.name = name
-  }
+  readonly events: Events
 
   log(message: string) {
     this.logger.push({age: this.age, id: Math.random(), msg: message})
   }
 
   addInvestmentAccount(acct: InvestmentAccount) {
-    this.investments.push(acct)
+    this.investments.add(acct)
   }
 
   addCreditAccount(acct: CreditAccount) {
-    this.debts.push(acct)
+    this.debts.add(acct)
   }
 }
+
+export function newPerson(name: string): Person {
+  return {
+    name,
+    sex: Math.random() < 0.5 : 'male' | 'female',
+    dead: false,
+    age: 18,
+    happiness: 0,
+    suffering: 0,
+    job: newJob(),
+    cash: newCashAccount(),
+    investments: List([]),
+    debts: List([]),
+    events: List([]),
+  }
+}
+
+export function log(person: Person, message: string): Person {
+  return {
+      ...person,
+    events: person.events.push({
+      age: person.age,
+      id: Math.random(),
+      msg: message,
+    })
+  }
+}
+
+export class AccountGroup<A extends Account> {
+  public accounts: Array<A> = []
+  public accrued: number = 0
+
+  add(acct: A) {
+    this.accounts.push(acct)
+  }
+
+  total(): number {
+    return this.accounts.reduce((total, acct) => total + acct.balance, 0)
+  }
+
+  makeProposal(): Array<A> {
+    return this.accounts.map(a => a.makeProposal())
+  }
+}
+
+export type InvestmentAccounts = AccountGroup<InvestmentAccount>
+export type CreditAccounts = AccountGroup<CreditAccount>
 
 export abstract class Account {
   public readonly name: string
@@ -215,8 +264,8 @@ export class SpendingProposal {
 
   constructor(person: Person) {
     this.cash = person.cash.makeProposal()
-    this.investments = person.investments.map(i => i.makeProposal())
-    this.debts = person.debts.map(d => d.makeProposal())
+    this.investments = person.investments.makeProposal()
+    this.debts = person.debts.makeProposal()
 
     this.startingTotal = this.proposalSum()
   }
